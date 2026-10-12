@@ -28,7 +28,7 @@
   }
 
   // 类别分类（与 GUIDE_GENRES 关联）
-  var GENRE_ORDER = ["美食", "宠物", "电竞", "娱乐", "潮玩", "职场", "运动"];
+  var GENRE_ORDER = ["美食", "宠物", "异宠", "电竞", "娱乐", "潮玩", "职场", "运动"];
   function genreOf(item) {
     return (window.GUIDE_GENRES && window.GUIDE_GENRES[item.id]) || "";
   }
@@ -176,7 +176,7 @@
     resultCountEl.textContent = "共 " + list.length + " 个颓废方式" + (state.q || state.tags.length || state.genres.length || state.cat !== "all" ? "（已筛选）" : "");
   }
 
-  function render() { renderCards(); renderActiveFilters(); }
+  function render() { renderCards(); renderActiveFilters(); renderJobs(); }
 
   // 当前生效的筛选条件一览，点击单项可移除，或一键清除全部
   function renderActiveFilters() {
@@ -192,6 +192,308 @@
           escapeHtml(p.label) + ' <span class="af-x">×</span></button>';
       }).join("") +
       '<button class="af-clear" type="button" id="af-clear">清除全部</button>';
+  }
+
+  /* =========================================================
+     职业爽感时刻表
+     每行一个职业 × 每列一天 24 小时的热力表，
+     回答「哪些职业在什么时候能发挥最大爽感」。
+     ========================================================= */
+  var JOBS = window.GUIDE_JOBS || [];
+  var JOB_FIELD_ORDER = ["技术派", "创意派", "现场派", "助人派", "奔走派", "生意派", "匠心派"];
+  var jobState = { field: "", open: null, hour: 0, touched: false };
+
+  var topnavEl = $("topnav");
+  var jobFieldsEl = $("jobs-fields");
+  var jobsGridEl = $("jobs-grid");
+  var jobsRankEl = $("jobs-rank");
+  var hourRangeEl = $("hour-range");
+  var hourLabelEl = $("hour-label");
+  var hourNowEl = $("hour-now");
+  var clockNowEl = $("clock-now");
+  var clockJobEl = $("clock-job");
+  var clockDescEl = $("clock-desc");
+  var JOBS_READY = JOBS.length > 0 && !!jobsGridEl;
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function hourText(h) { return pad2(h) + ":00"; }
+  function nowHour() { return new Date().getHours(); }
+
+  // 某小时到某个时段窗口的距离（支持跨零点），在窗口内为 0
+  function windowDistance(h, win) {
+    var inside = win.from <= win.to ? (h >= win.from && h <= win.to) : (h >= win.from || h <= win.to);
+    if (inside) return 0;
+    return Math.min((win.from - h + 24) % 24, (h - win.to + 24) % 24);
+  }
+
+  // 某职业在某小时的爽感强度 0-100： Baseline + 各时段的高斯衰减
+  function jobHeat(job, h) {
+    var v = 6; // 底线：毕竟是在上班
+    job.peaks.forEach(function (win) {
+      var d = windowDistance(h, win);
+      v = Math.max(v, win.heat * Math.exp(-(d * d) / 6));
+    });
+    return Math.round(v);
+  }
+
+  // 热度 → 颜色（蓝 → 紫 → 洋红的热力渐变）
+  function heatStyle(v) {
+    var t = Math.max(0, Math.min(100, v)) / 100;
+    var hue = Math.round(220 + t * 125);
+    var alpha = (0.10 + 0.72 * t).toFixed(2);
+    return "background:hsla(" + hue + ",85%,58%," + alpha + ")";
+  }
+
+  function isPeakHour(job, h) {
+    return job.peaks.some(function (win) { return windowDistance(h, win) === 0; });
+  }
+
+  function matchJob(job, q) {
+    q = String(q).toLowerCase();
+    var hay = [job.name, job.field, job.peak, job.moment, job.why, job.tags.join(" ")].join(" ").toLowerCase();
+    return hay.indexOf(q) >= 0;
+  }
+
+  function jobMatches(job) {
+    if (jobState.field && job.field !== jobState.field) return false;
+    if (state.tags.length && !state.tags.every(function (t) { return job.tags.indexOf(t) >= 0; })) return false;
+    if (state.q && !matchJob(job, state.q)) return false;
+    return true;
+  }
+
+  function visibleJobs() { return JOBS.filter(jobMatches); }
+
+  /* ---------- 领域筛选 chips ---------- */
+  function renderJobFields() {
+    var counts = {};
+    JOBS.forEach(function (j) { counts[j.field] = (counts[j.field] || 0) + 1; });
+    var fields = JOB_FIELD_ORDER.filter(function (f) { return counts[f]; }).concat(
+      Object.keys(counts).filter(function (f) { return JOB_FIELD_ORDER.indexOf(f) < 0; })
+    );
+    jobFieldsEl.innerHTML = "";
+    var all = document.createElement("button");
+    all.className = "jf-chip" + (jobState.field ? "" : " is-active");
+    all.type = "button";
+    all.innerHTML = '全部领域<span class="tag-count">' + JOBS.length + "</span>";
+    all.addEventListener("click", function () { jobState.field = ""; renderJobFields(); renderJobs(); });
+    jobFieldsEl.appendChild(all);
+    fields.forEach(function (f) {
+      var chip = document.createElement("button");
+      chip.className = "jf-chip" + (jobState.field === f ? " is-active" : "");
+      chip.type = "button";
+      chip.innerHTML = escapeHtml(f) + '<span class="tag-count">' + counts[f] + "</span>";
+      chip.addEventListener("click", function () {
+        jobState.field = (jobState.field === f) ? "" : f;
+        renderJobFields();
+        renderJobs();
+      });
+      jobFieldsEl.appendChild(chip);
+    });
+  }
+
+  /* ---------- 详情：职业卡展开内容 ---------- */
+  function jobDetailHtml(job) {
+    var terms = state.q ? [state.q].concat(state.tags) : state.tags.slice();
+    var why = escapeHtml(job.why);
+    job.tags.forEach(function (t) {
+      why = why.replace(new RegExp("(" + escapeReg(escapeHtml(t)) + ")", "g"), '<span class="mech">$1</span>');
+    });
+    var peaks = job.peaks.map(function (win) {
+      return '<span class="jd-win">' + hourText(win.from) + "–" + hourText(win.to === 24 ? 24 : win.to) +
+        '<b> ' + win.heat + "</b></span>";
+    }).join("");
+    var tags = job.tags.map(function (t) {
+      return '<span class="card-tag tag-click" data-tag="' + escapeHtml(t) + '">#' + escapeHtml(t) + "</span>";
+    }).join("");
+    return '<div class="jd-head">' +
+        '<div class="jd-emoji">' + job.emoji + "</div>" +
+        '<div class="jd-title"><span class="jd-field">' + escapeHtml(job.field) + "</span>" +
+          "<h3>" + highlight(job.name, terms) + "</h3>" +
+          '<p class="jd-moment">' + highlight(job.moment, terms) + "</p></div>" +
+        '<span class="jd-badge">爽感峰值 <b>' + escapeHtml(job.peak) + "</b></span>" +
+      "</div>" +
+      '<p class="jd-why">' + why + "</p>" +
+      '<div class="jd-meters">' + meter("🧠 多巴胺指数", job.score.dopamine, "") +
+        meter("💜 内啡肽指数", job.score.endorphin, " endorphin") + "</div>" +
+      '<div class="jd-row"><span class="jd-key">高光时刻</span><div class="jd-wins">' + peaks + "</div></div>" +
+      '<div class="jd-row"><span class="jd-key">爽点机制</span><div class="jd-tags">' + tags + "</div></div>" +
+      '<div class="jd-hint">点机制标签可回看「同机制」的颓废条目 →</div>';
+  }
+
+  /* ---------- 热力表 ---------- */
+  function renderJobs() {
+    if (!JOBS_READY) return;
+    var list = visibleJobs();
+    var terms = state.q ? [state.q].concat(state.tags) : state.tags.slice();
+    var nowH = nowHour();
+    jobsGridEl.innerHTML = "";
+
+    if (!list.length) {
+      jobsGridEl.innerHTML = '<div class="jobs-none">没有匹配的职业，换个关键词或清除筛选试试。</div>';
+      jobsRankEl.innerHTML = "";
+      return;
+    }
+
+    // 表头：24 小时刻度
+    var head = document.createElement("div");
+    head.className = "jr-row jr-head";
+    head.innerHTML = '<span class="jr-name jr-name-head">职业 / 时段</span>';
+    for (var h = 0; h < 24; h++) {
+      var hc = document.createElement("button");
+      hc.className = "jh-hour" + (h === nowH ? " is-now" : "");
+      hc.type = "button";
+      hc.setAttribute("data-h", h);
+      hc.textContent = (h % 2 === 0) ? String(h) : "";
+      hc.title = "查看 " + hourText(h) + " 的爽感排行";
+      (function (hh) {
+        hc.addEventListener("click", function () { jobState.touched = true; selectHour(hh); });
+      })(h);
+      head.appendChild(hc);
+    }
+    jobsGridEl.appendChild(head);
+
+    list.forEach(function (job) {
+      var block = document.createElement("div");
+      block.className = "jr-block";
+
+      var row = document.createElement("div");
+      row.className = "jr-row";
+      var name = document.createElement("button");
+      name.className = "jr-name";
+      name.type = "button";
+      name.innerHTML = '<span class="jr-emoji">' + job.emoji + "</span>" +
+        '<span class="jr-text"><b>' + highlight(job.name, terms) + "</b>" +
+        "<small>" + escapeHtml(job.field) + " · " + escapeHtml(job.peak) + "</small></span>" +
+        '<span class="jr-arrow">' + (jobState.open === job.id ? "▲" : "▼") + "</span>";
+      name.addEventListener("click", function () { toggleJob(job.id); });
+      row.appendChild(name);
+
+      for (var h = 0; h < 24; h++) {
+        var v = jobHeat(job, h);
+        var cell = document.createElement("button");
+        cell.className = "jc" + (v >= 82 ? " is-hot" : "") + (isPeakHour(job, h) ? " is-peak" : "");
+        cell.type = "button";
+        cell.setAttribute("data-h", h);
+        cell.setAttribute("aria-label", job.name + " " + hourText(h) + " 爽感 " + v);
+        cell.title = hourText(h) + " · 爽感 " + v;
+        cell.style.cssText = heatStyle(v);
+        (function (jj, hh) {
+          cell.addEventListener("click", function () {
+            jobState.touched = true;
+            selectHour(hh);
+            toggleJob(jj.id, true);
+          });
+        })(job, h);
+        row.appendChild(cell);
+      }
+      block.appendChild(row);
+
+      if (jobState.open === job.id) {
+        var detail = document.createElement("div");
+        detail.className = "jr-detail";
+        detail.id = "jd-" + job.id;
+        detail.innerHTML = jobDetailHtml(job);
+        block.appendChild(detail);
+        Array.prototype.forEach.call(detail.querySelectorAll(".tag-click"), function (el) {
+          el.addEventListener("click", function (e) {
+            e.stopPropagation();
+            toggleTag(el.getAttribute("data-tag"));
+            scrollToSection("entries");
+          });
+        });
+      }
+      jobsGridEl.appendChild(block);
+    });
+
+    highlightHour();
+    renderRank();
+  }
+
+  function toggleJob(id, forceOpen) {
+    jobState.open = (jobState.open === id && !forceOpen) ? null : id;
+    renderJobs();
+  }
+
+  /* ---------- 小时联动 ---------- */
+  function selectHour(h) {
+    jobState.hour = h;
+    if (hourRangeEl) hourRangeEl.value = h;
+    if (hourLabelEl) hourLabelEl.textContent = hourText(h);
+    highlightHour();
+    renderRank();
+  }
+
+  function highlightHour() {
+    if (!jobsGridEl) return;
+    Array.prototype.forEach.call(jobsGridEl.querySelectorAll(".is-sel"), function (el) { el.classList.remove("is-sel"); });
+    Array.prototype.forEach.call(jobsGridEl.querySelectorAll('[data-h="' + jobState.hour + '"]'), function (el) {
+      el.classList.add("is-sel");
+    });
+  }
+
+  function renderRank() {
+    if (!jobsRankEl) return;
+    var list = visibleJobs().map(function (j) { return { job: j, heat: jobHeat(j, jobState.hour) }; })
+      .sort(function (a, b) { return b.heat - a.heat; })
+      .slice(0, 6);
+    if (!list.length) {
+      jobsRankEl.innerHTML = '<div class="rank-none">这个点整，暂时没人爽 🫠</div>';
+      return;
+    }
+    jobsRankEl.innerHTML = '<div class="rank-head"><span>' + hourText(jobState.hour) + " 的爽感排行</span>" +
+      "<small>越靠前 = 此刻越接近该职业的高光时刻</small></div>" +
+      list.map(function (x, i) {
+        return '<button class="rank-item' + (i === 0 ? " is-top" : "") + (jobState.open === x.job.id ? " is-open" : "") +
+          '" type="button" data-job="' + x.job.id + '">' +
+          '<span class="rank-no">' + (i + 1) + "</span>" +
+          '<span class="rank-emoji">' + x.job.emoji + "</span>" +
+          '<span class="rank-main"><b>' + escapeHtml(x.job.name) + "</b><small>" + escapeHtml(x.job.moment) + "</small></span>" +
+          '<span class="rank-heat" style="' + heatStyle(x.heat) + '">' + x.heat + "</span>" +
+          "</button>";
+      }).join("");
+    Array.prototype.forEach.call(jobsRankEl.querySelectorAll(".rank-item"), function (el) {
+      el.addEventListener("click", function () { toggleJob(el.getAttribute("data-job")); });
+    });
+  }
+
+  /* ---------- 此刻面板 ---------- */
+  function updateClock() {
+    var d = new Date();
+    if (clockNowEl) clockNowEl.textContent = pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    if (!JOBS.length) return;
+    var top = JOBS.slice().sort(function (a, b) { return jobHeat(b, d.getHours()) - jobHeat(a, d.getHours()); })[0];
+    if (!top) return;
+    if (clockJobEl) clockJobEl.textContent = top.emoji + " " + top.name;
+    if (clockDescEl) clockDescEl.textContent = top.moment;
+  }
+
+  /* ---------- 导航锚点滚动 ---------- */
+  function scrollToSection(id) {
+    var target = document.getElementById(id);
+    if (!target) return;
+    var y = target.getBoundingClientRect().top + (window.pageYOffset || 0) - 68;
+    window.scrollTo({ top: y, behavior: "smooth" });
+  }
+
+  if (topnavEl) {
+    topnavEl.addEventListener("click", function (e) {
+      var b = e.target.closest(".nav-btn");
+      if (!b) return;
+      Array.prototype.forEach.call(topnavEl.children, function (c) { c.classList.toggle("is-active", c === b); });
+      scrollToSection(b.getAttribute("data-goto"));
+    });
+  }
+
+  if (JOBS_READY) {
+    if (hourRangeEl) {
+      hourRangeEl.addEventListener("input", function () {
+        jobState.touched = true;
+        selectHour(parseInt(hourRangeEl.value, 10));
+      });
+    }
+    if (hourNowEl) {
+      hourNowEl.addEventListener("click", function () { jobState.touched = false; selectHour(nowHour()); });
+    }
   }
 
   /* ---------- 详情弹层 ---------- */
@@ -354,7 +656,7 @@
     var labs = Object.keys(LABS).length;
     var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     var bs = document.querySelectorAll("#hero-stats b");
-    var targets = [items, tags, labs];
+    var targets = [items, tags, labs, JOBS.length];
     if (reduced) {
       bs.forEach(function (b, i) { b.textContent = targets[i]; });
       return;
@@ -369,6 +671,22 @@
     });
   }
 
+  /* ---------- 职业模块挂载 ---------- */
+  function mountJobs() {
+    if (!JOBS_READY) return;
+    var navCount = $("nav-job-count");
+    if (navCount) navCount.textContent = JOBS.length;
+    renderJobFields();
+    selectHour(nowHour());
+    updateClock();
+    renderJobs();
+    // 每分钟刷新「此刻」；用户没手动拖过时间轴时，自动跟随真实时间
+    setInterval(function () {
+      updateClock();
+      if (!jobState.touched && nowHour() !== jobState.hour) selectHour(nowHour());
+    }, 60000);
+  }
+
   /* ---------- 启动 ---------- */
   function init() {
     readHash();
@@ -376,6 +694,7 @@
     renderGenreBar();
     render();
     animateStats();
+    mountJobs();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
