@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="人生浪费指南：用科学拆解当代人各种好玩行为与好吃东西的爽点机制，每条配一个可点击的互动小实验。" />
+  <title>人生浪费指南 · 躺平研究所</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <!-- 背景霓虹光斑 -->
+  <div class="bg-blobs" aria-hidden="true">
+    <span class="blob blob-1"></span>
+    <span class="blob blob-2"></span>
+    <span class="blob blob-3"></span>
+    <div class="grid-overlay"></div>
+  </div>
+
+  <!-- 顶部导航 -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark">颓</span>
+        <div class="brand-text">
+          <strong>人生浪费指南</strong>
+          <small>躺平研究所 · 零依赖纯静态</small>
+        </div>
+      </div>
+      <div class="search-wrap">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.3-4.3M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14z"/></svg>
+        <input id="search" type="search" placeholder="搜索行为 / 食物 / 机制标签…" autocomplete="off" />
+        <button id="search-clear" class="search-clear" type="button" aria-label="清除搜索" hidden>×</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <h1 class="hero-title">欢迎来到<span class="glow-pink">躺平研究所</span></h1>
+      <p class="hero-sub">人类为什么停不下来？这里用科学拆解<span class="glow-cyan">好玩</span>与<span class="glow-cyan">好吃</span>背后的爽点机制，每条还配一个<strong>点击即可运行</strong>的互动小实验。</p>
+      <ul class="hero-stats" id="hero-stats">
+        <li><b data-count="12">0</b><span>颓废条目</span></li>
+        <li><b data-count="0">0</b><span>机制标签</span></li>
+        <li><b data-count="0">0</b><span>互动实验</span></li>
+      </ul>
+    </section>
+
+    <!-- 控制区 -->
+    <section class="controls">
+      <div class="cat-switch" id="cat-switch" role="tablist" aria-label="分类切换">
+        <button class="cat-btn is-active" data-cat="all" role="tab">全部</button>
+        <button class="cat-btn" data-cat="fun" role="tab">好玩</button>
+        <button class="cat-btn" data-cat="food" role="tab">好吃</button>
+      </div>
+      <div class="result-count" id="result-count"></div>
+      <div class="active-filters" id="active-filters" aria-live="polite"></div>
+    </section>
+
+    <!-- 类别栏 -->
+    <section class="genrebar" id="genrebar" aria-label="类别筛选"></section>
+
+    <!-- 标签云 -->
+    <section class="tagcloud" id="tagcloud" aria-label="标签筛选"></section>
+
+    <!-- 卡片网格 -->
+    <section class="cards" id="cards" aria-live="polite"></section>
+
+    <!-- 空状态 -->
+    <div class="empty" id="empty" hidden>
+      <div class="empty-emoji">🪦</div>
+      <p>没有找到匹配的颓废方式，换个关键词试试？</p>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>本指南仅供轻松科普，所有「机制」均为通俗化解读，不构成医学或健康建议。 · 双击 <code>index.html</code> 即可离线浏览。</p>
+  </footer>
+
+  <!-- 详情弹层 -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" type="button" data-close aria-label="关闭">×</button>
+      <div class="modal-head">
+        <div class="modal-emoji" id="modal-emoji"></div>
+        <div>
+          <span class="modal-cat" id="modal-cat"></span>
+          <span class="modal-genre" id="modal-genre"></span>
+          <h2 id="modal-title"></h2>
+          <p class="modal-hook" id="modal-hook"></p>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="modal-explain" id="modal-explain"></div>
+        <div class="modal-dopamine" id="modal-dopamine"></div>
+        <div class="modal-tags" id="modal-tags"></div>
+        <div class="lab">
+          <div class="lab-label">🧪 点击运行互动实验</div>
+          <div class="lab-stage" id="lab-stage"></div>
+          <div class="lab-caption" id="lab-caption"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 顺序加载：数据 → 实验 → 应用 -->
+  <script defer src="assets/js/data.js"></script>
+  <script defer src="assets/js/labs.js"></script>
+  <script defer src="assets/js/app.js"></script>
+</body>
+</html>
