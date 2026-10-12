@@ -6,6 +6,10 @@
 
 零构建、零运行时依赖，clone 下来双击 `index.html` 就能看，也能直接部署到 GitHub Pages。
 
+[![在线体验](https://img.shields.io/badge/在线体验-GitHub%20Pages-00e5ff?style=for-the-badge&logo=github)](https://rex-lk.github.io/lying-flat-handbook/)
+
+🔗 **点这里直接体验 → <https://rex-lk.github.io/lying-flat-handbook/>**
+
 ## ✨ 特性
 
 - **32 个条目**：好玩类（熬夜刷剧 / 开盲盒 / 撸猫 / 再来一局 / 摸鱼 / 刷短视频 / 各类运动）、
@@ -32,22 +36,34 @@
 
 > 因为全部资源使用相对路径、且不使用 ES Module / fetch，所以 `file://` 协议下功能完整。
 
-## 🌐 部署到 GitHub Pages（在线查看 + 搜索）
+## 🌐 在线体验链接
 
-1. 把整个文件夹作为仓库内容（保持目录结构不变）：
+本仓库远端为 `origin → https://github.com/Rex-LK/lying-flat-handbook.git`，
+开启 Pages 后，**把它发给任何人，点开就能玩**：
+
+**https://rex-lk.github.io/lying-flat-handbook/**
+
+建议再做一步：打开 GitHub 仓库首页 → 右侧 **About → ⚙️（设置齿轮）** → 勾选
+`Use your GitHub Pages website` 并填入上面这个地址。这样别人在仓库简介里就能直接点进去。
+
+> Pages 还没开启时的临时预览（第三方服务，无需任何设置即可打开）：
+> https://htmlpreview.github.io/?https://github.com/Rex-LK/lying-flat-handbook/blob/main/index.html
+
+## 🚀 开启 Pages（只需做一次）
+
+1. 推送代码（远端已配置，通常只需后三行）：
    ```bash
-   git init
    git add .
    git commit -m "人生浪费指南"
    git branch -M main
-   git remote add origin <你的仓库地址>
    git push -u origin main
    ```
-2. 在仓库 **Settings → Pages** 中，Source 选择 `main` 分支、目录选 `/ (root)`，保存。
-3. 稍等片刻，访问 `https://<你的用户名>.github.io/<仓库名>/` 即可在线浏览与搜索。
+2. 打开仓库 **Settings → Pages**，Build and deployment → Source 选
+   `Deploy from a branch`，Branch 选 `main`、目录选 `/ (root)`，保存。
+3. 等 1–2 分钟，访问上面的地址即可；以后每次 `git push` 都会自动更新线上版本。
 
 > 仓库根目录已包含 `.nojekyll`，会跳过 Jekyll 处理，避免资源被忽略。
-> 若部署在子路径（`user.github.io/repo/`），所有链接均使用相对路径，无需任何修改。
+> 所有资源均使用相对路径，部署在子路径（`user.github.io/repo/`）也无需任何修改。
 
 ## 🧩 如何新增一个职业（爽感时刻表）
 
