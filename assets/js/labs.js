@@ -2279,6 +2279,244 @@
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
   }
 
+  /* =======================================================
+     23. 社交桌游 —— 狼人杀 / 剧本杀 / 麻将 / 扑克
+     ======================================================= */
+  function labWerewolf(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var bRole = btn("🃏 发身份", "");
+    var bVote = btn("🌙 天黑投票", "cyan");
+    center.appendChild(bRole); center.appendChild(bVote);
+    var roles = [
+      { name: "狼人", emoji: "🐺" }, { name: "预言家", emoji: "🔮" },
+      { name: "女巫", emoji: "🧪" }, { name: "平民", emoji: "🧑" }
+    ];
+    var N = 6, myRole = null, day = 0, out = [], ended = false, verdict = "";
+    bRole.addEventListener("click", function () {
+      myRole = roles[Math.floor(Math.random() * roles.length)];
+      out = []; day = 1; ended = false; verdict = "";
+      setCaption(container, "身份已发：你是「" + myRole.name + "」。不到天亮，没人知道谁在撒谎——这就是变比率强化的社交版。");
+      read.set([
+        { val: day, label: "第几天" },
+        { val: myRole.name, label: "你的身份", kind: "cyan" },
+        { val: 0, label: "已放逐" }
+      ]);
+    });
+    bVote.addEventListener("click", function () {
+      if (!myRole) { setCaption(container, "先点「发身份」拿到你的角色。"); return; }
+      if (ended) { setCaption(container, "本局已结束：" + verdict + " 再点「发身份」开新局。"); return; }
+      var pool = [];
+      for (var i = 0; i < N; i++) if (out.indexOf(i) < 0) pool.push(i);
+      out.push(pool[Math.floor(Math.random() * pool.length)]); day++;
+      var win = Math.random() < 0.34;
+      if (win || day >= 6) {
+        ended = true;
+        verdict = win ? (myRole.name === "狼人" ? "狼人屠城，你赢了 🐺" : "好人放逐真狼，你赢了 🎉") : "平局收场，意犹未尽。";
+        setCaption(container, verdict + " 社交博弈的多巴胺，就藏在「不敢确定」的那几晚。");
+      } else {
+        setCaption(container, "第 " + day + " 天，又放逐了一人。真凶还在装好人，期待奖励持续挂账。");
+      }
+      read.set([
+        { val: day, label: "第几天" },
+        { val: myRole.name, label: "你的身份", kind: "cyan" },
+        { val: out.length, label: "已放逐" }
+      ]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      var g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#0a1024"); g.addColorStop(1, "#141a33");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#E9E6FF"; ctx.shadowColor = "#9C8CFF"; ctx.shadowBlur = 24;
+      ctx.beginPath(); ctx.arc(w * 0.8, h * 0.22, 16, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+      var gap = w / (N + 1);
+      for (var i = 0; i < N; i++) {
+        var x = gap * (i + 1), y = h * 0.6, dead = out.indexOf(i) >= 0;
+        ctx.globalAlpha = dead ? 0.28 : 1;
+        ctx.font = "30px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText(dead ? "💀" : "🧑", x, y);
+        if (dead) { ctx.strokeStyle = "rgba(255,77,109,0.85)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x - 14, y - 22); ctx.lineTo(x + 14, y - 2); ctx.stroke(); }
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(255,255,255,0.9)"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(myRole ? ("你是 " + myRole.emoji + " " + myRole.name) : "点「发身份」开局", w / 2, h * 0.32);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labJubensha(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var bSearch = btn("🔍 搜证", "");
+    var bAccuse = btn("🎯 指认凶手", "cyan");
+    center.appendChild(bSearch); center.appendChild(bAccuse);
+    var pool = [
+      { emoji: "🔪", text: "凶器" }, { emoji: "📜", text: "遗书" }, { emoji: "🕐", text: "时间线" },
+      { emoji: "💊", text: "毒药" }, { emoji: "👁", text: "目击者" }, { emoji: "🧥", text: "外套纤维" }
+    ];
+    var found = [], solved = false;
+    bSearch.addEventListener("click", function () {
+      if (solved) { setCaption(container, "真相已破，点「发身份」重开一局。"); return; }
+      if (found.length >= pool.length) { setCaption(container, "线索已搜尽，该去投票指认了。"); return; }
+      var left = pool.filter(function (c) { return found.indexOf(c.text) < 0; });
+      var c = left[Math.floor(Math.random() * left.length)];
+      found.push(c.text);
+      setCaption(container, "搜到【" + c.emoji + c.text + "】。线索碎片越多，解谜的多巴胺越满——收集欲正在喂养你。");
+      read.set([
+        { val: found.length + "/" + pool.length, label: "线索" },
+        { val: solved ? "已破案" : "未破案", label: "状态", kind: solved ? "good" : "" }
+      ]);
+    });
+    bAccuse.addEventListener("click", function () {
+      if (solved) return;
+      if (found.length < 3) { setCaption(container, "线索不足（至少 3 条），先去搜证。"); return; }
+      var hit = Math.random() < (found.length / pool.length) * 0.9 + 0.1;
+      if (hit) { solved = true; setCaption(container, "指认正确！逻辑闭环的那一刻，解谜型多巴胺直接拉满 🎉"); }
+      else { setCaption(container, "指认错误，真凶在笑。再搜几条线索，期待奖励还在挂账。"); }
+      read.set([
+        { val: found.length + "/" + pool.length, label: "线索" },
+        { val: solved ? "已破案" : "未破案", label: "状态", kind: solved ? "good" : "" }
+      ]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      var g = ctx.createRadialGradient(w / 2, h / 2, 20, w / 2, h / 2, w * 0.7);
+      g.addColorStop(0, "#1a1430"); g.addColorStop(1, "#0a0d18");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      var n = pool.length, gap = w / (n + 1);
+      for (var i = 0; i < n; i++) {
+        var x = gap * (i + 1), y = h * 0.42, got = found.indexOf(pool[i].text) >= 0;
+        ctx.globalAlpha = got ? 1 : 0.22;
+        ctx.fillStyle = got ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.06)";
+        roundRect(ctx, x - 18, y - 22, 36, 44, 8); ctx.fill();
+        ctx.fillStyle = got ? "#fff" : "rgba(255,255,255,0.4)";
+        ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(pool[i].emoji, x, y);
+      }
+      ctx.globalAlpha = 1; ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = solved ? "#00E5A0" : "rgba(255,255,255,0.85)";
+      ctx.font = "bold 14px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(solved ? "🎉 真相大白" : "搜证拼图，越凑越上头", w / 2, h * 0.82);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labMahjong(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🀄 摸牌", "cyan");
+    center.appendChild(b);
+    var hand = 0, wins = 0, listening = false, glow = 0;
+    b.addEventListener("click", function () {
+      if (hand >= 13) {
+        if (Math.random() < (listening ? 0.32 : 0.06)) {
+          wins++; hand = 0; listening = false; glow = 1;
+          setCaption(container, "胡了！🀄 推倒长城的脆响 + 全桌的「哇」，社交与成就一起点燃。");
+        } else {
+          hand = 0; listening = false;
+          setCaption(container, "没胡，打出去重来。就差一张的近因效应，比一帆风顺更上头。");
+        }
+      } else {
+        hand++;
+        if (hand === 13) { listening = true; setCaption(container, "听牌了！🀄 就等那一张——变比率强化的最高潮。"); }
+        else setCaption(container, "摸牌如开奖，每一次都是随机奖励的期待。");
+      }
+      read.set([
+        { val: hand, label: "手牌数" },
+        { val: wins, label: "胡牌", kind: wins ? "good" : "" },
+        { val: listening ? "听牌" : "—", label: "状态", kind: listening ? "cyan" : "" }
+      ]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      var g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, "#0c1a14"); g.addColorStop(1, "#08110d");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      glow = Math.max(0, glow - 0.03);
+      var total = 14, cw = 26, gp = 4, startX = w / 2 - (total * (cw + gp)) / 2 + cw / 2;
+      for (var i = 0; i < total; i++) {
+        var x = startX + i * (cw + gp), y = h * 0.5, filled = i < hand;
+        ctx.fillStyle = filled ? "#0b0d14" : "rgba(255,255,255,0.05)";
+        ctx.strokeStyle = filled ? (glow > 0 ? "rgba(0,229,160," + (0.4 + glow * 0.6) + ")" : "rgba(255,255,255,0.25)") : "rgba(255,255,255,0.1)";
+        ctx.lineWidth = 2;
+        roundRect(ctx, x - cw / 2, y - 34, cw, 50, 6); ctx.fill(); ctx.stroke();
+        if (filled) { ctx.fillStyle = "#00E5A0"; ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("🀄", x, y); }
+      }
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(listening ? "🀄 听牌中，就差一张！" : "点「摸牌」，每一次都是开奖", w / 2, h * 0.82);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labCards(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var bDeal = btn("🃏 发底牌", "");
+    var bFlop = btn("🎲 翻牌/开牌", "cyan");
+    center.appendChild(bDeal); center.appendChild(bFlop);
+    var ranks = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
+    var suits = [{ s: "♠", c: "#1b1f2b" }, { s: "♥", c: "#FF4D6D" }, { s: "♦", c: "#FF4D6D" }, { s: "♣", c: "#1b1f2b" }];
+    function rc() { return { r: ranks[Math.floor(Math.random() * ranks.length)], su: suits[Math.floor(Math.random() * suits.length)] }; }
+    var hole = [], comm = [], wins = 0, rounds = 0, name = "—";
+    function drawCard(ctx, x, y, c, face) {
+      var cw = 30, ch = 44;
+      ctx.fillStyle = "#f4f5fb"; ctx.strokeStyle = "rgba(0,0,0,0.3)"; ctx.lineWidth = 1.5;
+      roundRect(ctx, x - cw / 2, y - ch / 2, cw, ch, 5); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = face ? c.su.c : "rgba(0,0,0,0.25)";
+      ctx.font = "bold 12px sans-serif"; ctx.textAlign = "left"; ctx.textBaseline = "top";
+      ctx.fillText(face ? (c.r + c.su.s) : "?", x - cw / 2 + 3, y - ch / 2 + 2);
+    }
+    bDeal.addEventListener("click", function () {
+      hole = [rc(), rc()]; comm = []; rounds++; name = "—";
+      setCaption(container, "底牌到手，但赢面未知——开牌前的期待，正是变比率强化的精华。");
+      read.set([
+        { val: rounds, label: "本局", kind: "cyan" },
+        { val: wins, label: "赢牌", kind: wins ? "good" : "" },
+        { val: name, label: "牌型" }
+      ]);
+    });
+    bFlop.addEventListener("click", function () {
+      if (!hole.length) { setCaption(container, "先点「发底牌」。"); return; }
+      comm.push(rc());
+      if (comm.length >= 3 || Math.random() < 0.4) {
+        var types = ["高牌", "一对", "两对", "三条", "顺子", "同花", "葫芦", "炸弹/王炸"];
+        name = types[Math.floor(Math.random() * types.length)];
+        if (Math.random() < 0.4) { wins++; setCaption(container, name + "！这把稳了 🎉 掌控感 + 期待奖励一起到账。"); }
+        else setCaption(container, name + "。对面可能更大……下一把再来。");
+      } else setCaption(container, "翻一张公共牌，牌型正在成型。");
+      read.set([
+        { val: rounds, label: "本局", kind: "cyan" },
+        { val: wins, label: "赢牌", kind: wins ? "good" : "" },
+        { val: name, label: "牌型" }
+      ]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      var g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#0c1a12"); g.addColorStop(1, "#07110b");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      var y = h * 0.5, hx = w / 2 - 40;
+      drawCard(ctx, hx, y, suits[0], hole[0]); drawCard(ctx, hx + 36, y, suits[1], hole[1]);
+      var cx = w / 2 + 40;
+      for (var i = 0; i < comm.length; i++) drawCard(ctx, cx + i * 30, y, comm[i].su, comm[i]);
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(hole.length ? "你的底牌 + 公共牌" : "点「发底牌」开局", w / 2, h * 0.82);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
   /* ---------- 注册 ---------- */
   window.GUIDE_LABS = {
     binge: { init: labBinge },
@@ -2316,6 +2554,12 @@
     hedgehog: { init: labHedgehog },
     tarantula: { init: labTarantula },
     hermitcrab: { init: labHermitcrab },
-    axolotl: { init: labAxolotl }
+    axolotl: { init: labAxolotl },
+
+    /* 社交桌游 */
+    werewolf: { init: labWerewolf },
+    jubensha: { init: labJubensha },
+    mahjong: { init: labMahjong },
+    cards: { init: labCards }
   };
 })();

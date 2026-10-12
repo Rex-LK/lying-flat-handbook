@@ -28,7 +28,7 @@
   }
 
   // 类别分类（与 GUIDE_GENRES 关联）
-  var GENRE_ORDER = ["美食", "宠物", "异宠", "电竞", "娱乐", "潮玩", "职场", "运动"];
+  var GENRE_ORDER = ["美食", "宠物", "异宠", "电竞", "娱乐", "潮玩", "职场", "运动", "桌游"];
   function genreOf(item) {
     return (window.GUIDE_GENRES && window.GUIDE_GENRES[item.id]) || "";
   }
