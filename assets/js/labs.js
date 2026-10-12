@@ -2520,46 +2520,22 @@
   /* =======================================================
      24. 爬山 / 徒步 —— 一个人在轨迹上行走
      ======================================================= */
+  /* =======================================================
+     24. 爬山 / 徒步 —— 雪山场景，点哪走到哪
+     ======================================================= */
   function labHiking(container) {
     var mc = makeCanvas(container);
     var center = makeCenter(container);
     var read = makeReadout(container);
-    var bGo = btn("🥾 出发", "cyan");
-    var bReset = btn("🔁 重走", "");
-    center.appendChild(bGo); center.appendChild(bReset);
+    var bReset = btn("🔁 回到山脚", "");
+    center.appendChild(bReset);
 
-    var wp = [
-      { x: 0.10, y: 0.93 }, { x: 0.20, y: 0.82 }, { x: 0.16, y: 0.70 }, { x: 0.30, y: 0.64 },
-      { x: 0.26, y: 0.52 }, { x: 0.42, y: 0.46 }, { x: 0.38, y: 0.34 }, { x: 0.54, y: 0.28 },
-      { x: 0.62, y: 0.20 }, { x: 0.58, y: 0.12 }
+    var hx = 0, hy = 0, target = null, reached = true, reachedName = "", moving = false, legPhase = 0, endo = 0, walkDist = 0;
+    var spots = [
+      { x: 0.30, y: 0.64, emoji: "🏕️", name: "营地" },
+      { x: 0.64, y: 0.60, emoji: "🏞️", name: "冰湖" },
+      { x: 0.50, y: 0.50, emoji: "🔭", name: "观景台" }
     ];
-    function px(i) { return wp[i].x * mc.dims.w; }
-    function py(i) { return wp[i].y * mc.dims.h; }
-
-    var segLen = [], total = 0;
-    function buildSegs() {
-      segLen = []; total = 0;
-      for (var i = 0; i < wp.length - 1; i++) {
-        var dx = (wp[i + 1].x - wp[i].x) * mc.dims.w, dy = (wp[i + 1].y - wp[i].y) * mc.dims.h;
-        var L = Math.sqrt(dx * dx + dy * dy); segLen.push(L); total += L;
-      }
-    }
-    function pointAt(pos) {
-      if (!total) return { x: px(0), y: py(0), ang: 0 };
-      var target = pos * total, acc = 0;
-      for (var i = 0; i < segLen.length; i++) {
-        if (acc + segLen[i] >= target || i === segLen.length - 1) {
-          var f = segLen[i] ? clamp((target - acc) / segLen[i], 0, 1) : 0;
-          return { x: lerp(px(i), px(i + 1), f), y: lerp(py(i), py(i + 1), f), ang: Math.atan2(py(i + 1) - py(i), px(i + 1) - px(i)) };
-        }
-        acc += segLen[i];
-      }
-      return { x: px(0), y: py(0), ang: 0 };
-    }
-    function alt(p) { return Math.round(lerp(200, 2150, p)); }
-    function dist(p) { return lerp(0, 8.6, p).toFixed(1); }
-
-    var pos = 0, walking = true, legPhase = 0, endo = 0, topped = false, confetti = [];
     function drawHiker(ctx, x, y, ang, ph) {
       ctx.save(); ctx.translate(x, y);
       ctx.rotate(clamp(ang * 0.5, -0.5, 0.6));
@@ -2575,72 +2551,85 @@
       ctx.fillStyle = "#FF4D6D"; ctx.beginPath(); ctx.arc(2, -34, 5.5, Math.PI, 0); ctx.fill();
       ctx.restore();
     }
-
-    bGo.addEventListener("click", function () {
-      if (topped) return;
-      walking = !walking;
-      bGo.textContent = walking ? "⏸ 休息" : "🥾 继续走";
-      setCaption(container, walking ? "脚步即反馈：每一步都在靠近山顶那个期待奖励。" : "歇口气，看会儿云。");
+    function drawPeak(ctx, cx, baseY, hgt, light, dark) {
+      ctx.fillStyle = dark; ctx.beginPath(); ctx.moveTo(cx - hgt * 0.6, baseY); ctx.lineTo(cx, baseY - hgt); ctx.lineTo(cx + hgt * 0.6, baseY); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = light; ctx.beginPath(); ctx.moveTo(cx, baseY - hgt); ctx.lineTo(cx + hgt * 0.6, baseY); ctx.lineTo(cx + hgt * 0.2, baseY); ctx.closePath(); ctx.fill();
+    }
+    function reset() {
+      hx = mc.dims.w * 0.5; hy = mc.dims.h * 0.9; target = null; reached = true; reachedName = ""; moving = false; walkDist = 0; endo = 0; legPhase = 0;
+      setCaption(container, "点雪面任意一处，他就踩着雪走过去——路线随你选。");
+      read.set([{ val: "0m", label: "已步行", kind: "cyan" }, { val: "—", label: "目标" }, { val: "0%", label: "内啡肽", kind: "good" }]);
+    }
+    bReset.addEventListener("click", reset);
+    mc.canvas.addEventListener("click", function (e) {
+      var x = e.offsetX, y = e.offsetY;
+      var snowTop = mc.dims.h * 0.46;
+      if (y < snowTop + 8) y = snowTop + 8;
+      var hit = null, best = 1e9;
+      spots.forEach(function (s) {
+        var sx = s.x * mc.dims.w, sy = s.y * mc.dims.h, d = Math.hypot(sx - x, sy - y);
+        if (d < best) { best = d; hit = s; }
+      });
+      if (hit && best < mc.dims.w * 0.07) { x = hit.x * mc.dims.w; y = hit.y * mc.dims.h; reachedName = hit.name; }
+      else reachedName = "";
+      target = { x: x, y: y }; reached = false; moving = true;
+      setCaption(container, reachedName ? ("朝「" + reachedName + "」出发，雪面吱吱响。") : "出发！每一步都是即时反馈。");
     });
-    bReset.addEventListener("click", function () {
-      pos = 0; walking = false; topped = false; endo = 0; confetti = []; legPhase = 0;
-      bGo.textContent = "🥾 出发"; setCaption(container, "山脚下，背包已背好。第一步最值得。");
-    });
-    read.set([{ val: alt(0) + "m", label: "海拔", kind: "cyan" }, { val: dist(0) + "km", label: "距离" }, { val: "0%", label: "内啡肽", kind: "good" }]);
-    bGo.textContent = "⏸ 休息";
-    setCaption(container, "脚步即反馈：每一步都在靠近山顶那个期待奖励。");
+    reset();
 
     var lp = loop(function (t) {
       var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
-      buildSegs();
-      var sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, "#7ec8ff"); sky.addColorStop(1, "#dff0ff");
+      // 天空
+      var sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, "#3a4a86"); sky.addColorStop(0.5, "#8fb4e6"); sky.addColorStop(1, "#dcecff");
       ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = "#FFD23F"; ctx.shadowColor = "#FFB020"; ctx.shadowBlur = 30;
-      ctx.beginPath(); ctx.arc(w * 0.82, h * 0.16, 22, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
-      var cl = (t / 120) % (w + 200) - 100;
-      drawCloud(ctx, cl, h * 0.18, 1);
-      drawCloud(ctx, (cl * 0.6 + w * 0.5) % (w + 200) - 100, h * 0.30, 0.7);
-      drawRidge(ctx, w, h, 0.55, "#bcd6c8");
-      drawRidge(ctx, w, h, 0.62, "#a9c8b6");
-      var baseY = h * 0.66;
-      ctx.fillStyle = "#8fb98f"; ctx.beginPath(); ctx.moveTo(0, baseY);
-      ctx.lineTo(w * 0.18, h * 0.5); ctx.lineTo(w * 0.34, h * 0.58); ctx.lineTo(w * 0.5, h * 0.4);
-      ctx.lineTo(w * 0.62, h * 0.46); ctx.lineTo(w * 0.78, h * 0.34); ctx.lineTo(w, h * 0.5);
-      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#7fae6f"; ctx.fillRect(0, baseY, w, h - baseY);
-      // 路径
-      ctx.strokeStyle = "rgba(180,140,90,0.9)"; ctx.lineWidth = 7; ctx.lineCap = "round"; ctx.lineJoin = "round";
-      ctx.beginPath();
-      for (var i = 0; i < wp.length; i++) { if (i === 0) ctx.moveTo(px(i), py(i)); else ctx.lineTo(px(i), py(i)); }
-      ctx.stroke();
-      ctx.fillStyle = "rgba(120,90,55,0.7)";
-      for (var j = 0; j < wp.length; j++) { ctx.beginPath(); ctx.arc(px(j), py(j), 2.5, 0, 6.29); ctx.fill(); }
-      for (var k = 1; k < wp.length - 1; k++) drawTree(ctx, px(k) + (k % 2 ? 14 : -14), py(k) + 6);
-      // 山顶旗
-      var top = pointAt(1);
-      ctx.strokeStyle = "#5a4632"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(top.x, top.y - 22); ctx.stroke();
-      ctx.fillStyle = "#FF2E88"; ctx.beginPath(); ctx.moveTo(top.x, top.y - 22); ctx.lineTo(top.x + 14, top.y - 17); ctx.lineTo(top.x, top.y - 12); ctx.closePath(); ctx.fill();
-      // 进度条
-      ctx.fillStyle = "rgba(0,0,0,0.25)"; roundRect(ctx, 12, 12, w - 24, 8, 4); ctx.fill();
-      ctx.fillStyle = "#00E5A0"; roundRect(ctx, 12, 12, (w - 24) * pos, 8, 4); ctx.fill();
-      // 行走推进
-      if (walking && !topped) {
-        pos += 0.0016; legPhase += 0.25; endo = clamp(endo + 0.12, 0, 100);
-        if (pos >= 1) {
-          pos = 1; walking = false; topped = true; bGo.textContent = "🥾 出发";
-          setCaption(container, "登顶！🏔 视野炸开，内啡肽与「我走上来」的掌控感一起到账。");
-          for (var c = 0; c < 40; c++) confetti.push({ x: top.x, y: top.y - 10, vx: rand(-3, 3), vy: rand(-6, -1), life: 1, col: ["#FF2E88", "#00E5FF", "#7C4DFF", "#FFB020"][c % 4] });
+      // 太阳
+      ctx.fillStyle = "#FFE9A8"; ctx.shadowColor = "#FFD23F"; ctx.shadowBlur = 40;
+      ctx.beginPath(); ctx.arc(w * 0.8, h * 0.18, 26, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+      // 远雪峰
+      drawPeak(ctx, w * 0.22, h * 0.5, 120, "#e8eefc", "#c2cfe6");
+      drawPeak(ctx, w * 0.5, h * 0.46, 155, "#f3f7ff", "#cdd9ee");
+      drawPeak(ctx, w * 0.78, h * 0.52, 110, "#e8eefc", "#c2cfe6");
+      // 雪地
+      var snowTop = h * 0.46;
+      var g = ctx.createLinearGradient(0, snowTop, 0, h); g.addColorStop(0, "#ffffff"); g.addColorStop(1, "#d4e2f4");
+      ctx.fillStyle = g; ctx.fillRect(0, snowTop, w, h - snowTop);
+      // 路线（从山脚向各景点蜿蜒的虚线）
+      ctx.strokeStyle = "rgba(120,140,175,0.55)"; ctx.lineWidth = 4; ctx.setLineDash([10, 9]); ctx.lineCap = "round"; ctx.lineJoin = "round";
+      spots.forEach(function (s) {
+        ctx.beginPath(); ctx.moveTo(w * 0.5, h * 0.9);
+        ctx.quadraticCurveTo((w * 0.5 + s.x * w) / 2, h * 0.7, s.x * w, s.y * h); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      // 景点标记
+      spots.forEach(function (s) {
+        ctx.font = "20px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillText(s.emoji, s.x * w, s.y * h);
+        ctx.fillStyle = "rgba(40,60,90,0.75)"; ctx.font = "11px sans-serif"; ctx.fillText(s.name, s.x * w, s.y * h + 16);
+        ctx.fillStyle = "#fff";
+      });
+      // 目标标记
+      if (target && !reached) {
+        var pr = 8 + Math.sin(t / 150) * 4;
+        ctx.strokeStyle = "rgba(255,46,136,0.9)"; ctx.lineWidth = 2; ctx.textBaseline = "alphabetic";
+        ctx.beginPath(); ctx.arc(target.x, target.y, pr, 0, 6.29); ctx.stroke();
+        ctx.fillStyle = "#FF2E88"; ctx.font = "16px sans-serif"; ctx.textAlign = "center"; ctx.fillText("📍", target.x, target.y - 14);
+      }
+      // 移动
+      var ang = 0;
+      if (target) {
+        var dx = target.x - hx, dy = target.y - hy, d = Math.hypot(dx, dy);
+        if (d > 3) {
+          var sp = w * 0.004;
+          var st = Math.min(sp, d); hx += dx / d * st; hy += dy / d * st;
+          legPhase += 0.28; moving = true; walkDist += st; endo = clamp(endo + 0.04, 0, 100);
+          ang = Math.atan2(dy, dx);
+        } else if (!reached) {
+          reached = true; moving = false;
+          setCaption(container, reachedName ? ("到达「" + reachedName + "」🎉 内啡肽与「我走过来」的掌控感一起到账。") : "到达！雪原尽头，视野安静地铺开。");
         }
-        read.set([{ val: alt(pos) + "m", label: "海拔", kind: "cyan" }, { val: dist(pos) + "km", label: "距离" }, { val: Math.round(endo) + "%", label: "内啡肽", kind: "good" }]);
       }
-      var pp = pointAt(pos);
-      drawHiker(ctx, pp.x, pp.y, pp.ang, legPhase);
-      if (topped) {
-        confetti.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.012; ctx.globalAlpha = clamp(p.life, 0, 1); ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 6.29); ctx.fill(); });
-        ctx.globalAlpha = 1; confetti = confetti.filter(function (p) { return p.life > 0; });
-        ctx.fillStyle = "#fff"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
-        ctx.fillText("🏔 登顶 " + alt(1) + "m", top.x, top.y - 34);
-      }
+      drawHiker(ctx, hx, hy, moving ? ang : 0, legPhase);
+      read.set([{ val: Math.round(walkDist * 0.12) + "m", label: "已步行", kind: "cyan" }, { val: reachedName || (target ? "前往中" : "—"), label: "目标" }, { val: Math.round(endo) + "%", label: "内啡肽", kind: "good" }]);
     });
     lp.start();
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
