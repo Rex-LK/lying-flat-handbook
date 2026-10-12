@@ -2517,6 +2517,148 @@
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
   }
 
+  /* =======================================================
+     24. 爬山 / 徒步 —— 一个人在轨迹上行走
+     ======================================================= */
+  function labHiking(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var bGo = btn("🥾 出发", "cyan");
+    var bReset = btn("🔁 重走", "");
+    center.appendChild(bGo); center.appendChild(bReset);
+
+    var wp = [
+      { x: 0.10, y: 0.93 }, { x: 0.20, y: 0.82 }, { x: 0.16, y: 0.70 }, { x: 0.30, y: 0.64 },
+      { x: 0.26, y: 0.52 }, { x: 0.42, y: 0.46 }, { x: 0.38, y: 0.34 }, { x: 0.54, y: 0.28 },
+      { x: 0.62, y: 0.20 }, { x: 0.58, y: 0.12 }
+    ];
+    function px(i) { return wp[i].x * mc.dims.w; }
+    function py(i) { return wp[i].y * mc.dims.h; }
+
+    var segLen = [], total = 0;
+    function buildSegs() {
+      segLen = []; total = 0;
+      for (var i = 0; i < wp.length - 1; i++) {
+        var dx = (wp[i + 1].x - wp[i].x) * mc.dims.w, dy = (wp[i + 1].y - wp[i].y) * mc.dims.h;
+        var L = Math.sqrt(dx * dx + dy * dy); segLen.push(L); total += L;
+      }
+    }
+    function pointAt(pos) {
+      if (!total) return { x: px(0), y: py(0), ang: 0 };
+      var target = pos * total, acc = 0;
+      for (var i = 0; i < segLen.length; i++) {
+        if (acc + segLen[i] >= target || i === segLen.length - 1) {
+          var f = segLen[i] ? clamp((target - acc) / segLen[i], 0, 1) : 0;
+          return { x: lerp(px(i), px(i + 1), f), y: lerp(py(i), py(i + 1), f), ang: Math.atan2(py(i + 1) - py(i), px(i + 1) - px(i)) };
+        }
+        acc += segLen[i];
+      }
+      return { x: px(0), y: py(0), ang: 0 };
+    }
+    function alt(p) { return Math.round(lerp(200, 2150, p)); }
+    function dist(p) { return lerp(0, 8.6, p).toFixed(1); }
+
+    var pos = 0, walking = true, legPhase = 0, endo = 0, topped = false, confetti = [];
+    function drawHiker(ctx, x, y, ang, ph) {
+      ctx.save(); ctx.translate(x, y);
+      ctx.rotate(clamp(ang * 0.5, -0.5, 0.6));
+      var bob = Math.sin(ph) * 2.2; ctx.translate(0, bob);
+      ctx.strokeStyle = "#0b0d14"; ctx.lineWidth = 3; ctx.lineCap = "round";
+      var sw = Math.sin(ph) * 6;
+      ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(sw, 6); ctx.moveTo(0, -10); ctx.lineTo(-sw, 6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(0, -26); ctx.stroke();
+      ctx.fillStyle = "#FFB020"; roundRect(ctx, -7, -24, 8, 12, 3); ctx.fill();
+      var aw = Math.sin(ph + 3.14) * 5;
+      ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(aw + 4, -12); ctx.stroke();
+      ctx.fillStyle = "#FFE0BD"; ctx.beginPath(); ctx.arc(2, -32, 5, 0, 6.29); ctx.fill();
+      ctx.fillStyle = "#FF4D6D"; ctx.beginPath(); ctx.arc(2, -34, 5.5, Math.PI, 0); ctx.fill();
+      ctx.restore();
+    }
+
+    bGo.addEventListener("click", function () {
+      if (topped) return;
+      walking = !walking;
+      bGo.textContent = walking ? "⏸ 休息" : "🥾 继续走";
+      setCaption(container, walking ? "脚步即反馈：每一步都在靠近山顶那个期待奖励。" : "歇口气，看会儿云。");
+    });
+    bReset.addEventListener("click", function () {
+      pos = 0; walking = false; topped = false; endo = 0; confetti = []; legPhase = 0;
+      bGo.textContent = "🥾 出发"; setCaption(container, "山脚下，背包已背好。第一步最值得。");
+    });
+    read.set([{ val: alt(0) + "m", label: "海拔", kind: "cyan" }, { val: dist(0) + "km", label: "距离" }, { val: "0%", label: "内啡肽", kind: "good" }]);
+    bGo.textContent = "⏸ 休息";
+    setCaption(container, "脚步即反馈：每一步都在靠近山顶那个期待奖励。");
+
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      buildSegs();
+      var sky = ctx.createLinearGradient(0, 0, 0, h); sky.addColorStop(0, "#7ec8ff"); sky.addColorStop(1, "#dff0ff");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "#FFD23F"; ctx.shadowColor = "#FFB020"; ctx.shadowBlur = 30;
+      ctx.beginPath(); ctx.arc(w * 0.82, h * 0.16, 22, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+      var cl = (t / 120) % (w + 200) - 100;
+      drawCloud(ctx, cl, h * 0.18, 1);
+      drawCloud(ctx, (cl * 0.6 + w * 0.5) % (w + 200) - 100, h * 0.30, 0.7);
+      drawRidge(ctx, w, h, 0.55, "#bcd6c8");
+      drawRidge(ctx, w, h, 0.62, "#a9c8b6");
+      var baseY = h * 0.66;
+      ctx.fillStyle = "#8fb98f"; ctx.beginPath(); ctx.moveTo(0, baseY);
+      ctx.lineTo(w * 0.18, h * 0.5); ctx.lineTo(w * 0.34, h * 0.58); ctx.lineTo(w * 0.5, h * 0.4);
+      ctx.lineTo(w * 0.62, h * 0.46); ctx.lineTo(w * 0.78, h * 0.34); ctx.lineTo(w, h * 0.5);
+      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#7fae6f"; ctx.fillRect(0, baseY, w, h - baseY);
+      // 路径
+      ctx.strokeStyle = "rgba(180,140,90,0.9)"; ctx.lineWidth = 7; ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.beginPath();
+      for (var i = 0; i < wp.length; i++) { if (i === 0) ctx.moveTo(px(i), py(i)); else ctx.lineTo(px(i), py(i)); }
+      ctx.stroke();
+      ctx.fillStyle = "rgba(120,90,55,0.7)";
+      for (var j = 0; j < wp.length; j++) { ctx.beginPath(); ctx.arc(px(j), py(j), 2.5, 0, 6.29); ctx.fill(); }
+      for (var k = 1; k < wp.length - 1; k++) drawTree(ctx, px(k) + (k % 2 ? 14 : -14), py(k) + 6);
+      // 山顶旗
+      var top = pointAt(1);
+      ctx.strokeStyle = "#5a4632"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(top.x, top.y - 22); ctx.stroke();
+      ctx.fillStyle = "#FF2E88"; ctx.beginPath(); ctx.moveTo(top.x, top.y - 22); ctx.lineTo(top.x + 14, top.y - 17); ctx.lineTo(top.x, top.y - 12); ctx.closePath(); ctx.fill();
+      // 进度条
+      ctx.fillStyle = "rgba(0,0,0,0.25)"; roundRect(ctx, 12, 12, w - 24, 8, 4); ctx.fill();
+      ctx.fillStyle = "#00E5A0"; roundRect(ctx, 12, 12, (w - 24) * pos, 8, 4); ctx.fill();
+      // 行走推进
+      if (walking && !topped) {
+        pos += 0.0016; legPhase += 0.25; endo = clamp(endo + 0.12, 0, 100);
+        if (pos >= 1) {
+          pos = 1; walking = false; topped = true; bGo.textContent = "🥾 出发";
+          setCaption(container, "登顶！🏔 视野炸开，内啡肽与「我走上来」的掌控感一起到账。");
+          for (var c = 0; c < 40; c++) confetti.push({ x: top.x, y: top.y - 10, vx: rand(-3, 3), vy: rand(-6, -1), life: 1, col: ["#FF2E88", "#00E5FF", "#7C4DFF", "#FFB020"][c % 4] });
+        }
+        read.set([{ val: alt(pos) + "m", label: "海拔", kind: "cyan" }, { val: dist(pos) + "km", label: "距离" }, { val: Math.round(endo) + "%", label: "内啡肽", kind: "good" }]);
+      }
+      var pp = pointAt(pos);
+      drawHiker(ctx, pp.x, pp.y, pp.ang, legPhase);
+      if (topped) {
+        confetti.forEach(function (p) { p.x += p.vx; p.y += p.vy; p.vy += 0.15; p.life -= 0.012; ctx.globalAlpha = clamp(p.life, 0, 1); ctx.fillStyle = p.col; ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, 6.29); ctx.fill(); });
+        ctx.globalAlpha = 1; confetti = confetti.filter(function (p) { return p.life > 0; });
+        ctx.fillStyle = "#fff"; ctx.font = "bold 16px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🏔 登顶 " + alt(1) + "m", top.x, top.y - 34);
+      }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+  function drawCloud(ctx, x, y, s) {
+    ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.beginPath();
+    ctx.arc(x, y, 18 * s, 0, 6.29); ctx.arc(x + 20 * s, y + 4 * s, 22 * s, 0, 6.29); ctx.arc(x + 44 * s, y, 16 * s, 0, 6.29); ctx.fill();
+  }
+  function drawRidge(ctx, w, h, baseY, color) {
+    ctx.fillStyle = color; ctx.beginPath(); ctx.moveTo(0, h); ctx.lineTo(0, h * baseY);
+    ctx.lineTo(w * 0.3, h * (baseY - 0.12)); ctx.lineTo(w * 0.6, h * (baseY - 0.02)); ctx.lineTo(w * 0.85, h * (baseY - 0.16)); ctx.lineTo(w, h * (baseY - 0.04)); ctx.lineTo(w, h); ctx.closePath(); ctx.fill();
+  }
+  function drawTree(ctx, x, y) {
+    ctx.fillStyle = "#5a3b22"; ctx.fillRect(x - 2, y - 2, 4, 10);
+    ctx.fillStyle = "#2f7d4f"; ctx.beginPath(); ctx.moveTo(x, y - 22); ctx.lineTo(x - 10, y - 2); ctx.lineTo(x + 10, y - 2); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(x, y - 32); ctx.lineTo(x - 8, y - 14); ctx.lineTo(x + 8, y - 14); ctx.closePath(); ctx.fill();
+  }
+
   /* ---------- 注册 ---------- */
   window.GUIDE_LABS = {
     binge: { init: labBinge },
@@ -2560,6 +2702,7 @@
     werewolf: { init: labWerewolf },
     jubensha: { init: labJubensha },
     mahjong: { init: labMahjong },
-    cards: { init: labCards }
+    cards: { init: labCards },
+    hiking: { init: labHiking }
   };
 })();
