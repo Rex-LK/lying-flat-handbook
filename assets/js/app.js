@@ -53,6 +53,8 @@
   var genrebarEl = $("genrebar");
   var modalEl = $("modal");
   var topbarEl = $("topbar");
+  var shareBtnEl = $("share-btn");
+  var toTopEl = $("to-top");
 
   /* ---------- 状态 ---------- */
   var state = { q: "", tags: [], cat: "all", genres: [] };
@@ -192,6 +194,206 @@
           escapeHtml(p.label) + ' <span class="af-x">×</span></button>';
       }).join("") +
       '<button class="af-clear" type="button" id="af-clear">清除全部</button>';
+  }
+
+  /* =========================================================
+     今日盲盒 · 躺平抽签机
+     以「日期」为种子抽一个条目：同一天结果稳定，零点自动换新；
+     未开盒时是一个晃动的礼物盒，点击后有开盒动画，不喜欢可「换一个」。
+     ========================================================= */
+  var LUCKY_TEASERS = [
+    "盲盒卖的是不确定性——开盒前那两秒最上头。",
+    "不知道里面是什么，才是快乐的来源。",
+    "变比率强化：下一个说不定更爽。",
+    "抽到什么算什么，反正都是躺平。",
+    "今天也要好好浪费时间呀。"
+  ];
+  var LUCKY_FORTUNES = [
+    "今日宜躺平，忌加班。",
+    "抽中这条，说明宇宙让你歇会儿。",
+    "别问为什么，问就是命中注定。",
+    "今日运势：多巴胺在线，烦恼离线。",
+    "这条很对你胃口，照做就行。",
+    "今日份的快乐已到账，请查收。",
+    "勉强算个好兆头，先开心为敬。"
+  ];
+  var LUCKY_KEY = "lfh-lucky-v1";
+  var luckyBoxEl = $("lucky-box");
+  var luckySubEl = $("lucky-sub");
+  var LUCKY_READY = ITEMS.length > 0 && !!luckyBoxEl;
+  var luckyState = { opened: false, item: null, used: [], draws: 0 };
+  var luckyTimer = null;
+
+  function itemById(id) {
+    for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].id === id) return ITEMS[i];
+    return null;
+  }
+  function dayKey() {
+    var d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate());
+  }
+  function dayText() {
+    var d = new Date();
+    return d.getFullYear() + " 年 " + (d.getMonth() + 1) + " 月 " + d.getDate() + " 日";
+  }
+  // 简单字符串哈希（FNV-1a），保证同一天算出的下标稳定
+  function hashSeed(s) {
+    var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = (h * 16777619) >>> 0; }
+    return h >>> 0;
+  }
+  // 今日主推：由日期决定，同一天永远是同一个
+  function dailyItem() {
+    return ITEMS[hashSeed(dayKey() + "|lying-flat") % ITEMS.length];
+  }
+  // 换一个：随机挑一个今天没抽过的；全抽完则重新洗牌
+  function nextItem() {
+    var pool = ITEMS.filter(function (it) { return luckyState.used.indexOf(it.id) < 0; });
+    if (!pool.length) { luckyState.used = []; pool = ITEMS.slice(); }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+  function loadLucky() {
+    try { var raw = window.localStorage.getItem(LUCKY_KEY); return raw ? JSON.parse(raw) : null; }
+    catch (e) { return null; }
+  }
+  function saveLucky() {
+    try {
+      window.localStorage.setItem(LUCKY_KEY, JSON.stringify({
+        date: dayKey(),
+        id: luckyState.item ? luckyState.item.id : "",
+        used: luckyState.used,
+        draws: luckyState.draws
+      }));
+    } catch (e) {}
+  }
+  function sparksHtml() {
+    var colors = ["var(--cyan)", "var(--pink)", "var(--amber)"], s = "";
+    for (var i = 0; i < 10; i++) {
+      s += '<span class="lb-spark" style="--a:' + (i * 36) + 'deg;--d:' + (54 + (i % 4) * 16) +
+        "px;background:" + colors[i % 3] + '"></span>';
+    }
+    return s;
+  }
+  function sealedHtml() {
+    return '<button class="lb-sealed" id="lb-open" type="button">' +
+      '<span class="lb-gift">🎁</span>' +
+      '<span class="lb-hint">点击开启今日盲盒</span>' +
+      '<span class="lb-date">' + dayText() + ' · 今日限定</span>' +
+      "</button>";
+  }
+  function openedHtml(item) {
+    var tagsHtml = item.tags.map(function (t) {
+      return '<button class="lb-tag" type="button" data-tag="' + escapeHtml(t) + '">#' + escapeHtml(t) + "</button>";
+    }).join("");
+    return '<div class="lb-open">' +
+      '<span class="lb-flash"></span>' + sparksHtml() +
+      '<div class="lb-result">' +
+        '<div class="lb-emoji">' + item.emoji + "</div>" +
+        '<div class="lb-meta">' +
+          '<span class="card-cat ' + item.cat + '">' + CAT_LABEL[item.cat] + "</span>" +
+          '<span class="lb-genre">' + escapeHtml(genreOf(item)) + "</span>" +
+          '<h3 class="lb-name">' + escapeHtml(item.name) + "</h3>" +
+          '<p class="lb-hook">' + escapeHtml(item.hook) + "</p>" +
+          '<p class="lb-fortune">🥠 ' + LUCKY_FORTUNES[Math.floor(Math.random() * LUCKY_FORTUNES.length)] + "</p>" +
+          '<div class="lb-tags">' + tagsHtml + "</div>" +
+          '<div class="lb-dopamine">' + brainMeters(item) + "</div>" +
+        "</div>" +
+      "</div>" +
+      '<div class="lb-actions">' +
+        '<button class="lb-btn lb-again" id="lb-again" type="button">🔁 换一个</button>' +
+        '<button class="lb-btn lb-play" id="lb-play" type="button">🧪 打开它的实验</button>' +
+        '<span class="lb-count">今日第 <b>' + luckyState.draws + "</b> 抽</span>" +
+      "</div>" +
+      "</div>";
+  }
+  function renderLucky() {
+    if (!LUCKY_READY) return;
+    luckyBoxEl.classList.remove("is-reveal");
+    luckyBoxEl.innerHTML = luckyState.opened ? openedHtml(luckyState.item) : sealedHtml();
+    if (luckySubEl && luckyState.opened) {
+      luckySubEl.textContent = dayText() + " 的盲盒已开启。不喜欢就点「换一个」，今天抽到满意为止。";
+    }
+  }
+  function openBox(item, animate) {
+    if (!LUCKY_READY || !item) return;
+    luckyState.item = item;
+    luckyState.opened = true;
+    if (luckyState.used.indexOf(item.id) < 0) luckyState.used.push(item.id);
+    luckyState.draws += 1;
+    saveLucky();
+    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!animate || reduced) { renderLucky(); return; }
+    clearTimeout(luckyTimer);
+    luckyBoxEl.classList.remove("is-reveal");
+    luckyBoxEl.classList.add("is-opening");
+    luckyBoxEl.innerHTML = sealedHtml();
+    luckyTimer = setTimeout(function () {
+      luckyBoxEl.classList.remove("is-opening");
+      renderLucky();
+      void luckyBoxEl.offsetWidth; // 强制重排，重启揭晓动画
+      luckyBoxEl.classList.add("is-reveal");
+    }, 520);
+  }
+  function mountLucky() {
+    if (!LUCKY_READY) return;
+    var saved = loadLucky();
+    if (saved && saved.date === dayKey()) {
+      var it = itemById(saved.id);
+      if (it) {
+        luckyState.item = it;
+        luckyState.opened = true;
+        luckyState.used = saved.used && saved.used.length ? saved.used.slice() : [it.id];
+        luckyState.draws = saved.draws || 1;
+      }
+    }
+    if (!luckyState.item) luckyState.item = dailyItem();
+    if (luckySubEl && !luckyState.opened) {
+      luckySubEl.textContent = "每天零点自动换一个推荐。" +
+        LUCKY_TEASERS[hashSeed(dayKey()) % LUCKY_TEASERS.length];
+    }
+    renderLucky();
+  }
+
+  if (LUCKY_READY) {
+    luckyBoxEl.addEventListener("click", function (e) {
+      var t = e.target;
+      if (t.closest("#lb-open")) { openBox(luckyState.item || dailyItem(), true); return; }
+      if (t.closest("#lb-again")) { openBox(nextItem(), true); return; }
+      if (t.closest("#lb-play")) { if (luckyState.item) openModal(luckyState.item); return; }
+      var tg = t.closest(".lb-tag");
+      if (tg) { toggleTag(tg.getAttribute("data-tag")); scrollToSection("entries"); }
+    });
+  }
+
+  /* ---------- 复制分享链接 / 回到顶部 ---------- */
+  function copyText(t) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(t);
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = t; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+      return Promise.resolve();
+    } catch (e) { return Promise.reject(e); }
+  }
+  if (shareBtnEl) {
+    shareBtnEl.addEventListener("click", function () {
+      copyText(location.href).then(function () {
+        var old = shareBtnEl.textContent;
+        shareBtnEl.textContent = "✅ 已复制";
+        shareBtnEl.classList.add("is-copied");
+        setTimeout(function () { shareBtnEl.textContent = old; shareBtnEl.classList.remove("is-copied"); }, 1600);
+      }).catch(function () {
+        shareBtnEl.textContent = "⚠️ 复制失败";
+        setTimeout(function () { shareBtnEl.textContent = "🔗 复制分享链接"; }, 1600);
+      });
+    });
+  }
+  if (toTopEl) {
+    toTopEl.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+    window.addEventListener("scroll", function () {
+      var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+      toTopEl.classList.toggle("is-show", y > 600);
+    }, { passive: true });
   }
 
   /* =========================================================
@@ -694,6 +896,7 @@
     renderGenreBar();
     render();
     animateStats();
+    mountLucky();
     mountJobs();
   }
 

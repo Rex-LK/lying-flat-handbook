@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="人生浪费指南：用科学拆解当代人各种好玩行为与好吃东西的爽点机制，每条配一个可点击的互动小实验。" />
   <title>人生浪费指南 · 躺平研究所</title>
+  <meta property="og:title" content="人生浪费指南 · 躺平研究所" />
+  <meta property="og:description" content="用科学拆解好玩与好吃背后的爽点机制，每天抽一个今日盲盒，看哪个职业在几点最爽。每条配一个点击即玩的互动小实验。" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="preview.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#0B0D14" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛋️</text></svg>" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
@@ -28,6 +35,7 @@
       </div>
       <nav class="topnav" id="topnav" aria-label="站内导航">
         <button class="nav-btn is-active" type="button" data-goto="entries">颓废条目</button>
+        <button class="nav-btn" type="button" data-goto="lucky">今日盲盒</button>
         <button class="nav-btn" type="button" data-goto="jobs">职业爽感<span class="nav-count" id="nav-job-count"></span></button>
       </nav>
       <div class="search-wrap">
@@ -42,13 +50,25 @@
     <!-- Hero -->
     <section class="hero">
       <h1 class="hero-title">欢迎来到<span class="glow-pink">躺平研究所</span></h1>
-      <p class="hero-sub">人类为什么停不下来？这里用科学拆解<span class="glow-cyan">好玩</span>与<span class="glow-cyan">好吃</span>背后的爽点机制，顺手回答一个更实际的问题：<strong>哪个职业在几点最爽</strong>。每条还配一个<strong>点击即可运行</strong>的互动小实验。</p>
+      <p class="hero-sub">人类为什么停不下来？我们用科学（真的，不是占星）拆解<span class="glow-cyan">好玩</span>与<span class="glow-cyan">好吃</span>背后的爽点机制，顺便替你操心两个更实际也更颓废的问题：<strong>今天该抽哪个盲盒</strong>、<strong>哪个职业在几点最爽</strong>。每条还配一个<strong>点击即可运行</strong>的互动小实验——点不点随你，反正你都已经躺下了。</p>
       <ul class="hero-stats" id="hero-stats">
         <li><b data-count="32">0</b><span>颓废条目</span></li>
         <li><b data-count="0">0</b><span>机制标签</span></li>
         <li><b data-count="0">0</b><span>互动实验</span></li>
         <li><b data-count="0">0</b><span>职业爽点</span></li>
       </ul>
+    </section>
+
+    <!-- 今日盲盒 · 躺平抽签机 -->
+    <section class="lucky" id="lucky">
+      <div class="lucky-inner">
+        <div class="lucky-head">
+          <span class="lucky-kicker">🎁 今日盲盒</span>
+          <h2 class="lucky-title">今天，<span class="glow-pink">抽一个</span>颓废方式</h2>
+          <p class="lucky-sub" id="lucky-sub">每天零点自动换一个推荐。不知道里面是什么，才是快乐的来源——不喜欢，点「换一个」再抽。</p>
+        </div>
+        <div class="lucky-box" id="lucky-box" aria-live="polite"></div>
+      </div>
     </section>
 
     <!-- 控制区 -->
@@ -59,6 +79,7 @@
         <button class="cat-btn" data-cat="food" role="tab">好吃</button>
       </div>
       <div class="result-count" id="result-count"></div>
+      <button class="share-btn" id="share-btn" type="button" title="复制当前筛选 / 盲盒的分享链接">🔗 复制分享链接</button>
       <div class="active-filters" id="active-filters" aria-live="polite"></div>
     </section>
 
@@ -108,6 +129,8 @@
       <div class="jobs-rank" id="jobs-rank"></div>
     </section>
   </main>
+
+  <button class="to-top" id="to-top" type="button" aria-label="回到顶部">↑ 顶部</button>
 
   <footer class="site-footer">
     <p>本指南仅供轻松科普，所有「机制」均为通俗化解读，不构成医学或健康建议。 · 双击 <code>index.html</code> 即可离线浏览。</p>

@@ -412,6 +412,108 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   background: rgba(255,255,255,0.14); color: inherit;
 }
 
+/* ---------- 今日盲盒 · 躺平抽签机 ---------- */
+.lucky { margin: 34px 0 6px; }
+.lucky-inner {
+  position: relative; padding: 26px 24px; border-radius: var(--radius);
+  display: flex; gap: 28px; align-items: center; flex-wrap: wrap;
+  background: linear-gradient(140deg, rgba(255,46,136,0.14), rgba(124,77,255,0.14) 55%, rgba(0,229,255,0.08));
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--shadow), 0 0 50px rgba(255,46,136,0.12);
+}
+.lucky-head { flex: 1 1 300px; }
+.lucky-kicker {
+  display: inline-block; font-size: 11px; letter-spacing: 1px; padding: 3px 10px;
+  border-radius: 999px; background: rgba(255,46,136,0.14); color: var(--pink); font-weight: 600;
+}
+.lucky-title { margin: 10px 0 8px; font-size: 26px; letter-spacing: .5px; }
+.lucky-sub { margin: 0; color: var(--text-dim); font-size: 13.5px; max-width: 520px; }
+.lucky-box { flex: 1 1 380px; min-width: 300px; }
+
+/* 未开盒：晃动的礼物盒 */
+.lb-sealed {
+  width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 26px 18px; cursor: pointer; font-family: inherit; color: var(--text);
+  background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: var(--radius);
+  animation: lbFloat 3.6s ease-in-out infinite;
+  transition: transform .2s, border-color .2s, background .2s, box-shadow .2s;
+}
+.lb-sealed:hover {
+  transform: translateY(-3px); border-color: var(--pink);
+  background: rgba(255,46,136,0.09); box-shadow: 0 0 30px rgba(255,46,136,0.25);
+}
+.lb-gift { font-size: 60px; line-height: 1; filter: drop-shadow(0 0 16px rgba(255,46,136,0.55)); }
+.lb-hint { font-size: 15px; font-weight: 700; }
+.lb-date { font-size: 12px; color: var(--text-dim); }
+@keyframes lbFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+/* 开盒瞬间：抖动 → 光爆 → 揭晓 */
+.lucky-box.is-opening .lb-sealed { animation: lbShake .5s cubic-bezier(.36,.07,.19,.97) both; }
+@keyframes lbShake {
+  10%, 90% { transform: translate3d(-2px, 0, 0) rotate(-2deg); }
+  20%, 80% { transform: translate3d(4px, 0, 0) rotate(3deg); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0) rotate(-4deg); }
+  40%, 60% { transform: translate3d(6px, 0, 0) rotate(4deg); }
+}
+.lucky-box.is-reveal .lb-open { animation: lbReveal .5s cubic-bezier(.2,.9,.3,1.2) both; }
+@keyframes lbReveal { from { opacity: 0; transform: scale(.9) translateY(8px); } to { opacity: 1; transform: none; } }
+
+.lb-open {
+  position: relative; padding: 18px; border-radius: var(--radius);
+  background: rgba(255,255,255,0.05); border: 1px solid var(--glass-line);
+}
+.lb-flash {
+  position: absolute; inset: -40%; pointer-events: none; opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,.5), rgba(255,46,136,.25) 35%, transparent 65%);
+}
+.lucky-box.is-reveal .lb-flash { animation: lbFlash .7s ease-out both; }
+@keyframes lbFlash {
+  0% { opacity: 0; transform: scale(.4); }
+  35% { opacity: .9; }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+.lb-spark {
+  position: absolute; left: 50%; top: 46%; width: 7px; height: 7px; border-radius: 50%;
+  opacity: 0; pointer-events: none;
+}
+.lucky-box.is-reveal .lb-spark { animation: lbSpark .75s ease-out both; }
+@keyframes lbSpark {
+  0% { opacity: 1; transform: translate(-50%, -50%) rotate(var(--a)) translateX(0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--a)) translateX(var(--d)) scale(.2); }
+}
+
+.lb-result { position: relative; display: flex; gap: 16px; align-items: flex-start; }
+.lb-emoji { font-size: 46px; line-height: 1; filter: drop-shadow(0 0 12px rgba(124,77,255,.6)); }
+.lb-meta { flex: 1; min-width: 0; }
+.lb-meta .card-cat { margin-bottom: 0; }
+.lb-genre { font-size: 11px; color: var(--text-dim); margin-left: 6px; }
+.lb-name { margin: 6px 0 6px; font-size: 20px; }
+.lb-hook { margin: 0 0 10px; color: var(--text-dim); font-size: 13.5px; }
+.lb-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.lb-tag {
+  font-size: 11.5px; padding: 2px 9px; border-radius: 999px; cursor: pointer; font-family: inherit;
+  background: rgba(0,229,255,0.1); color: var(--cyan); border: 1px solid rgba(0,229,255,0.25);
+  transition: background .2s;
+}
+.lb-tag:hover { background: rgba(0,229,255,0.24); }
+.lb-actions {
+  position: relative; display: flex; gap: 10px; align-items: center;
+  flex-wrap: wrap; margin-top: 14px;
+}
+.lb-btn {
+  padding: 9px 16px; border-radius: 999px; cursor: pointer; font-family: inherit;
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  background: rgba(255,255,255,0.06); border: 1px solid var(--glass-line);
+  transition: transform .2s, background .2s, border-color .2s, box-shadow .2s;
+}
+.lb-btn:hover { transform: translateY(-2px); }
+.lb-again:hover { background: rgba(255,46,136,0.18); border-color: var(--pink); }
+.lb-play { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--cyan), var(--purple)); }
+.lb-play:hover { box-shadow: 0 0 18px rgba(0,229,255,0.45); }
+.lb-count { margin-left: auto; font-size: 12px; color: var(--text-dim); }
+.lb-count b { color: var(--amber); font-variant-numeric: tabular-nums; }
+
 /* ---------- 职业爽感时刻表 ---------- */
 .jobs { margin: 46px 0 10px; padding-top: 40px; border-top: 1px dashed var(--glass-line); }
 .jobs-head {
@@ -588,11 +690,41 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   .jobs-clock { flex: 1 1 100%; }
   .jd-badge { text-align: left; }
   .rank-main small { white-space: normal; }
+  .lucky-inner { padding: 20px 16px; gap: 18px; }
+  .lucky-title { font-size: 22px; }
+  .lucky-box { min-width: 0; flex-basis: 100%; }
+  .lb-result { flex-direction: column; gap: 8px; }
+  .lb-count { margin-left: 0; }
+}
+
+/* ---------- 分享 / 回到顶部 ---------- */
+.share-btn {
+  margin-left: auto; padding: 8px 14px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;
+  color: var(--text); background: rgba(255,255,255,0.06); border: 1px solid var(--glass-line); border-radius: 999px;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.share-btn:hover { transform: translateY(-1px); border-color: var(--cyan); background: rgba(0,229,255,0.12); }
+.share-btn.is-copied { color: #fff; border-color: transparent; background: linear-gradient(135deg, var(--green), var(--cyan)); }
+.to-top {
+  position: fixed; right: 22px; bottom: 22px; z-index: 60; width: 46px; height: 46px; cursor: pointer;
+  font-family: inherit; font-size: 13px; line-height: 1; color: var(--text);
+  background: rgba(26,31,46,0.8); border: 1px solid var(--glass-line); border-radius: 50%;
+  backdrop-filter: blur(8px); box-shadow: var(--shadow);
+  opacity: 0; visibility: hidden; transform: translateY(12px); transition: opacity .3s, transform .3s, visibility .3s;
+}
+.to-top.is-show { opacity: 1; visibility: visible; transform: translateY(0); }
+.to-top:hover { border-color: var(--pink); color: #fff; box-shadow: 0 0 22px rgba(255,46,136,0.4); }
+.lb-fortune {
+  margin: 0 0 10px; font-size: 13px; color: var(--amber);
+  background: rgba(255,176,32,0.08); border: 1px dashed rgba(255,176,32,0.3); border-radius: 10px; padding: 7px 11px;
 }
 
 /* ---------- 降级：尊重减弱动效 ---------- */
 @media (prefers-reduced-motion: reduce) {
   .blob { animation: none; }
-  .card, .tag-chip, .lab-btn, .modal-panel, .modal-backdrop { transition: none; }
+  .card, .tag-chip, .lab-btn, .modal-panel, .modal-backdrop, .to-top { transition: none; }
+  .lb-sealed { animation: none; }
+  .lucky-box.is-opening .lb-sealed, .lucky-box.is-reveal .lb-open,
+  .lucky-box.is-reveal .lb-flash, .lucky-box.is-reveal .lb-spark { animation: none; }
   html { scroll-behavior: auto; }
 }
