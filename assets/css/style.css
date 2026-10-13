@@ -817,6 +817,14 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 }
 .to-top.is-show { opacity: 1; visibility: visible; transform: translateY(0); }
 .to-top:hover { border-color: var(--pink); color: #fff; box-shadow: 0 0 22px rgba(255,46,136,0.4); }
+.to-top .rocket { font-size: 18px; line-height: 1; display: inline-block; transition: transform .2s ease; }
+.to-top:hover .rocket { transform: translateY(-3px) rotate(-12deg); }
+.to-top.is-launch .rocket { animation: rocketLaunch .55s ease; }
+@keyframes rocketLaunch {
+  0% { transform: translateY(0) rotate(-12deg); }
+  40% { transform: translateY(-7px) scale(1.18) rotate(-12deg); }
+  100% { transform: translateY(0) scale(1) rotate(0); }
+}
 .lb-fortune {
   margin: 0 0 10px; font-size: 13px; color: var(--amber);
   background: rgba(255,176,32,0.08); border: 1px dashed rgba(255,176,32,0.3); border-radius: 10px; padding: 7px 11px;

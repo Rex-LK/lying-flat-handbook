@@ -513,7 +513,11 @@
     });
   }
   if (toTopEl) {
-    toTopEl.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+    toTopEl.addEventListener("click", function () {
+      toTopEl.classList.add("is-launch");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      setTimeout(function () { toTopEl.classList.remove("is-launch"); }, 600);
+    });
     window.addEventListener("scroll", function () {
       var y = window.pageYOffset || document.documentElement.scrollTop || 0;
       toTopEl.classList.toggle("is-show", y > 600);
