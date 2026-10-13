@@ -56,31 +56,35 @@
       <p class="hero-sub">人类为什么停不下来？我们用科学（真的，不是占星）拆解<span class="glow-cyan">好玩</span>与<span class="glow-cyan">好吃</span>背后的爽点机制，顺便替你操心两个更实际也更颓废的问题：<strong>今天该抽哪个盲盒</strong>、<strong>哪个职业在几点最爽</strong>。每条还配一个<strong>点击即可运行</strong>的互动小实验——点不点随你，反正你都已经躺下了。</p>
     </section>
 
-    <div class="twin">
-    <!-- 今日盲盒 · 躺平抽签机 -->
-    <section class="lucky" id="lucky">
-      <div class="lucky-inner">
-        <div class="lucky-head">
-          <span class="lucky-kicker">🎁 今日盲盒</span>
-          <h2 class="lucky-title">今天，<span class="glow-pink">抽一个</span>颓废方式</h2>
-          <p class="lucky-sub" id="lucky-sub">每天零点自动换一个推荐。不知道里面是什么，才是快乐的来源——不喜欢，点「换一个」再抽。</p>
+    <!-- 今日盲盒 + 摸鱼人格：合并卡片，圆形切换 -->
+    <section class="duo" id="duo">
+      <div class="duo-switch" role="tablist" aria-label="今日盲盒与摸鱼人格切换">
+        <button class="duo-btn is-active" type="button" role="tab" aria-selected="true" data-duo="lucky">
+          <span class="duo-ico">🎁</span><span class="duo-txt">今日盲盒</span>
+        </button>
+        <button class="duo-btn" type="button" role="tab" aria-selected="false" data-duo="persona">
+          <span class="duo-ico">🧭</span><span class="duo-txt">摸鱼人格</span>
+        </button>
+      </div>
+      <div class="duo-panels">
+        <div class="duo-panel is-active" id="lucky" data-panel="lucky">
+          <div class="lucky-head">
+            <span class="lucky-kicker">🎁 今日盲盒</span>
+            <h2 class="lucky-title">今天，<span class="glow-pink">抽一个</span>颓废方式</h2>
+            <p class="lucky-sub" id="lucky-sub">每天零点自动换一个推荐。不知道里面是什么，才是快乐的来源——不喜欢，点「换一个」再抽。</p>
+          </div>
+          <div class="lucky-box" id="lucky-box" aria-live="polite"></div>
         </div>
-        <div class="lucky-box" id="lucky-box" aria-live="polite"></div>
+        <div class="duo-panel" id="persona" data-panel="persona">
+          <div class="persona-head">
+            <span class="persona-kicker">🧭 摸鱼人格</span>
+            <h2 class="persona-title">你，是哪种<span class="glow-pink">颓废人格</span>？</h2>
+            <p class="persona-sub">6 道题，看穿你更被哪种「爽点机制」拿捏。测完给你一组推荐，说不定哪天真想在生活中试一个。</p>
+          </div>
+          <div class="persona-box" id="persona-box"></div>
+        </div>
       </div>
     </section>
-
-    <!-- 摸鱼人格测试 -->
-    <section class="persona" id="persona">
-      <div class="persona-inner">
-        <div class="persona-head">
-          <span class="persona-kicker">🧭 摸鱼人格</span>
-          <h2 class="persona-title">你，是哪种<span class="glow-pink">颓废人格</span>？</h2>
-          <p class="persona-sub">6 道题，看穿你更被哪种「爽点机制」拿捏。测完给你一组推荐，说不定哪天真想在生活中试一个。</p>
-        </div>
-        <div class="persona-box" id="persona-box"></div>
-      </div>
-    </section>
-    </div>
 
     <!-- 控制区 -->
     <section class="controls" id="entries">
@@ -181,5 +185,6 @@
   <script defer src="assets/js/labs.js"></script>
   <script defer src="assets/js/persona.js"></script>
   <script defer src="assets/js/app.js"></script>
+  <script defer src="assets/js/duo.js"></script>
 </body>
 </html>
