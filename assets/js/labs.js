@@ -2648,6 +2648,113 @@
     ctx.beginPath(); ctx.moveTo(x, y - 32); ctx.lineTo(x - 8, y - 14); ctx.lineTo(x + 8, y - 14); ctx.closePath(); ctx.fill();
   }
 
+  /* =======================================================
+     24. 拼豆 —— 心流 + 完成感（内啡肽）
+     ======================================================= */
+  function labPerler(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var palette = [
+      { name: "红", hex: "#FF4D6D" }, { name: "橙", hex: "#FF9F45" },
+      { name: "黄", hex: "#FFD23F" }, { name: "绿", hex: "#3DDC84" },
+      { name: "青", hex: "#00E5C0" }, { name: "蓝", hex: "#3D8BFF" },
+      { name: "紫", hex: "#9C6CFF" }, { name: "粉", hex: "#FF8FD0" },
+      { name: "白", hex: "#F4F6FF" }, { name: "黑", hex: "#2A2E3A" }
+    ];
+    var cur = 0, cols = 12, rows = 12, n = cols * rows;
+    var cells = []; for (var i = 0; i < n; i++) cells.push(-1);
+    var ironing = false, ironT = 0;
+
+    function layout() {
+      var w = mc.dims.w, h = mc.dims.h;
+      var pad = 14, top = 22;
+      var avail = Math.min(w - pad * 2, h - top - 150);
+      var cell = avail / Math.max(cols, rows);
+      var gw = cell * cols, gh = cell * rows;
+      return { ox: (w - gw) / 2, oy: top + (h - top - 150 - gh) / 2, cell: cell };
+    }
+    function cellAt(px, py) {
+      var L = layout();
+      var c = Math.floor((px - L.ox) / L.cell);
+      var r = Math.floor((py - L.oy) / L.cell);
+      if (c < 0 || c >= cols || r < 0 || r >= rows) return -1;
+      return r * cols + c;
+    }
+    function filled() { var k = 0; for (var i = 0; i < n; i++) if (cells[i] >= 0) k++; return k; }
+
+    mc.canvas.addEventListener("click", function (e) {
+      if (ironing) return;
+      var rect = mc.canvas.getBoundingClientRect();
+      var idx = cellAt(e.clientX - rect.left, e.clientY - rect.top);
+      if (idx < 0) return;
+      cells[idx] = cur;
+      updateRead();
+    });
+
+    var bColor = btn("🎨 换色：" + palette[cur].name, "");
+    var bIron = btn("🔥 熨烫定型", "cyan");
+    center.appendChild(bColor); center.appendChild(bIron);
+
+    bColor.addEventListener("click", function () {
+      if (ironing) return;
+      cur = (cur + 1) % palette.length;
+      bColor.textContent = "🎨 换色：" + palette[cur].name;
+      setCaption(container, "当前颜色：" + palette[cur].name + "。挑张图，一颗一颗摆，别问为什么。");
+      updateRead();
+    });
+    bIron.addEventListener("click", function () {
+      if (ironing) return;
+      if (filled() === 0) { setCaption(container, "先摆几颗珠子再熨，不然熨了个寂寞。"); return; }
+      ironing = true; ironT = 0;
+      setCaption(container, "熨斗压下，珠子开始融化融合……定型那一刻，内啡肽到账。");
+      updateRead();
+    });
+
+    function updateRead() {
+      read.set([
+        { val: filled() + "/" + n, label: "已拼珠子" },
+        { val: palette[cur].name, label: "当前色", kind: "cyan" },
+        { val: ironing ? "定型中" : "摆放中", label: "状态" }
+      ]);
+    }
+    updateRead();
+    setCaption(container, "点格子摆珠，点「换色」切颜色，摆满意后「熨烫定型」。心流就是这么悄悄把你一下午吃掉的。");
+
+    var lp = loop(function () {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      var L = layout();
+      if (ironing) ironT = Math.min(1, ironT + 0.012);
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          var ci = cells[r * cols + c];
+          var x = L.ox + c * L.cell + L.cell / 2, y = L.oy + r * L.cell + L.cell / 2;
+          if (ci < 0) {
+            ctx.fillStyle = "rgba(255,255,255,0.07)";
+            ctx.beginPath(); ctx.arc(x, y, L.cell * 0.34, 0, 6.2832); ctx.fill();
+          } else if (ironing) {
+            var grow = ironT * L.cell * 0.18;
+            ctx.fillStyle = palette[ci].hex;
+            roundRect(ctx, x - L.cell / 2 + 1 - grow, y - L.cell / 2 + 1 - grow, L.cell - 2 + grow * 2, L.cell - 2 + grow * 2, 5);
+            ctx.fill();
+          } else {
+            ctx.fillStyle = palette[ci].hex;
+            ctx.beginPath(); ctx.arc(x, y, L.cell * 0.36, 0, 6.2832); ctx.fill();
+            ctx.strokeStyle = "rgba(0,0,0,0.22)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(x, y, L.cell * 0.36, 0, 6.2832); ctx.stroke();
+          }
+        }
+      }
+      if (ironing && ironT >= 1) {
+        ctx.fillStyle = "rgba(255,255,255,0.95)"; ctx.font = "bold 15px sans-serif"; ctx.textAlign = "center";
+        ctx.fillText("🎉 定型完成 · " + filled() + " 颗焊进了一幅画", w / 2, h - 96);
+      }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
   /* ---------- 注册 ---------- */
   window.GUIDE_LABS = {
     binge: { init: labBinge },
@@ -2692,6 +2799,7 @@
     jubensha: { init: labJubensha },
     mahjong: { init: labMahjong },
     cards: { init: labCards },
-    hiking: { init: labHiking }
+    hiking: { init: labHiking },
+    perler: { init: labPerler }
   };
 })();
