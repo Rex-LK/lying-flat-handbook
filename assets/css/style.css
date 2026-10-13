@@ -148,6 +148,7 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
   display: flex; align-items: center; justify-content: space-between;
   gap: 16px; margin: 30px 0 14px; flex-wrap: wrap;
 }
+.controls-left { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
 .cat-switch {
   display: inline-flex; padding: 4px; gap: 4px; border-radius: 999px;
   background: var(--glass); border: 1px solid var(--glass-line);
@@ -216,6 +217,11 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
   display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px;
   margin-bottom: 12px; margin-left: 8px; font-weight: 600;
   background: rgba(124,77,255,0.16); color: var(--purple);
+}
+.card-time {
+  display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px;
+  margin-bottom: 12px; margin-left: 8px; font-weight: 600;
+  background: rgba(0,229,160,0.14); color: var(--green);
 }
 .modal-genre { margin-bottom: 8px; }
 

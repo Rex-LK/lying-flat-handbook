@@ -40,6 +40,18 @@
     ).map(function (g) { return { name: g, count: set[g] }; });
   })();
 
+  // 受众 / 耗时维度（与 GUIDE_ITEMS 通过 id 关联）
+  var AUD_LABEL = { busy: "高速上班族", bored: "无聊族", both: "通用" };
+  function audOf(item) { return (window.GUIDE_AUDIENCE && window.GUIDE_AUDIENCE[item.id]) || "both"; }
+  function durOf(item) { return (window.GUIDE_DURATION && window.GUIDE_DURATION[item.id]) || 60; }
+  function fmtDur(m) { return m >= 60 ? (Math.round(m / 6) / 10) + " 小时" : m + " 分钟"; }
+  // 按受众重排：上班族优先短耗时、无聊族优先长耗时
+  function sortByAudience(list) {
+    if (state.aud === "busy") list.sort(function (a, b) { return durOf(a) - durOf(b); });
+    else if (state.aud === "bored") list.sort(function (a, b) { return durOf(b) - durOf(a); });
+    return list;
+  }
+
   /* ---------- DOM ---------- */
   var $ = function (id) { return document.getElementById(id); };
   var cardsEl = $("cards");
@@ -50,6 +62,7 @@
   var activeFiltersEl = $("active-filters");
   var emptyEl = $("empty");
   var catSwitchEl = $("cat-switch");
+  var audSwitchEl = $("aud-switch");
   var genrebarEl = $("genrebar");
   var modalEl = $("modal");
   var topbarEl = $("topbar");
@@ -57,7 +70,7 @@
   var toTopEl = $("to-top");
 
   /* ---------- 状态 ---------- */
-  var state = { q: "", tags: [], cat: "all", genres: [] };
+  var state = { q: "", tags: [], cat: "all", genres: [], aud: "all" };
   var activeLab = null; // 当前挂载的实验 {destroy}
 
   /* ---------- 工具 ---------- */
@@ -92,6 +105,7 @@
   function filterItems() {
     return ITEMS.filter(function (item) {
       if (state.cat !== "all" && item.cat !== state.cat) return false;
+      if (state.aud !== "all") { var a = audOf(item); if (a !== state.aud && a !== "both") return false; }
       if (state.genres.length && state.genres.indexOf(genreOf(item)) < 0) return false;
       if (state.tags.length && !state.tags.every(function (t) { return item.tags.indexOf(t) >= 0; })) return false;
       if (!matchItem(item, state.q)) return false;
@@ -146,7 +160,7 @@
 
   /* ---------- 渲染：卡片 ---------- */
   function renderCards() {
-    var list = filterItems();
+    var list = sortByAudience(filterItems());
     cardsEl.innerHTML = "";
     emptyEl.hidden = list.length > 0;
     var terms = state.q ? [state.q].concat(state.tags) : state.tags.slice();
@@ -162,6 +176,7 @@
         '<div class="card-emoji">' + item.emoji + "</div>" +
         '<span class="card-cat ' + item.cat + '">' + CAT_LABEL[item.cat] + "</span>" +
         '<span class="card-genre">' + escapeHtml(genreOf(item)) + "</span>" +
+        '<span class="card-time">⏱ 约 ' + fmtDur(durOf(item)) + "</span>" +
         '<h3 class="card-name">' + highlight(item.name, terms) + "</h3>" +
         '<p class="card-hook">' + highlight(item.hook, terms) + "</p>" +
         '<div class="card-tags">' + tagsHtml + "</div>" +
@@ -186,7 +201,7 @@
       cardsEl.appendChild(card);
     });
     hydrateCounts(list);
-    resultCountEl.textContent = "共 " + list.length + " 个颓废方式" + (state.q || state.tags.length || state.genres.length || state.cat !== "all" ? "（已筛选）" : "");
+    resultCountEl.textContent = "共 " + list.length + " 个颓废方式" + (state.q || state.tags.length || state.genres.length || state.cat !== "all" || state.aud !== "all" ? "（已筛选）" : "");
   }
 
   // 拉取并填充当前卡片的点赞数 + 本机已赞态
@@ -240,6 +255,7 @@
   function renderActiveFilters() {
     var parts = [];
     if (state.cat !== "all") parts.push({ type: "cat", val: state.cat, label: CAT_LABEL[state.cat] });
+    if (state.aud !== "all") parts.push({ type: "aud", val: state.aud, label: AUD_LABEL[state.aud] });
     state.genres.forEach(function (g) { parts.push({ type: "genre", val: g, label: g }); });
     state.tags.forEach(function (t) { parts.push({ type: "tag", val: t, label: "#" + t }); });
     if (!parts.length) { activeFiltersEl.innerHTML = ""; return; }
@@ -926,13 +942,24 @@
     render();
   });
 
+  /* ---------- 受众切换 ---------- */
+  audSwitchEl.addEventListener("click", function (e) {
+    var btn = e.target.closest(".cat-btn");
+    if (!btn) return;
+    state.aud = btn.getAttribute("data-aud");
+    Array.prototype.forEach.call(audSwitchEl.children, function (b) { b.classList.toggle("is-active", b === btn); });
+    syncHash();
+    render();
+  });
+
   // 筛选状态条：点单项移除，点「清除全部」重置
   activeFiltersEl.addEventListener("click", function (e) {
     if (e.target.closest("#af-clear")) {
       state.q = ""; searchEl.value = ""; searchClearEl.hidden = true;
-      state.cat = "all"; state.tags = []; state.genres = [];
+      state.cat = "all"; state.tags = []; state.genres = []; state.aud = "all";
       syncHash();
       Array.prototype.forEach.call(catSwitchEl.children, function (b) { b.classList.toggle("is-active", b.getAttribute("data-cat") === "all"); });
+      Array.prototype.forEach.call(audSwitchEl.children, function (b) { b.classList.toggle("is-active", b.getAttribute("data-aud") === "all"); });
       renderTagCloud(); renderGenreBar(); render();
       return;
     }
@@ -942,6 +969,9 @@
     if (type === "cat") {
       state.cat = "all";
       Array.prototype.forEach.call(catSwitchEl.children, function (b) { b.classList.toggle("is-active", b.getAttribute("data-cat") === "all"); });
+    } else if (type === "aud") {
+      state.aud = "all";
+      Array.prototype.forEach.call(audSwitchEl.children, function (b) { b.classList.toggle("is-active", b.getAttribute("data-aud") === "all"); });
     } else if (type === "genre") {
       state.genres = state.genres.filter(function (g) { return g !== val; });
     } else if (type === "tag") {
@@ -958,6 +988,7 @@
     if (state.tags.length) parts.push("tag=" + state.tags.map(encodeURIComponent).join(","));
     if (state.genres.length) parts.push("genre=" + state.genres.map(encodeURIComponent).join(","));
     if (state.cat && state.cat !== "all") parts.push("cat=" + state.cat);
+    if (state.aud && state.aud !== "all") parts.push("aud=" + state.aud);
     var hash = parts.length ? "#" + parts.join("&") : "#";
     history.replaceState(null, "", hash);
   }
@@ -972,18 +1003,22 @@
       else if (k === "tag") { state.tags = v ? v.split(",").filter(Boolean) : []; }
       else if (k === "genre") { state.genres = v ? v.split(",").filter(Boolean) : []; }
       else if (k === "cat") { state.cat = v || "all"; }
+      else if (k === "aud") { state.aud = v || "all"; }
     });
     // 同步分类按钮
     Array.prototype.forEach.call(catSwitchEl.children, function (b) {
       b.classList.toggle("is-active", b.getAttribute("data-cat") === state.cat);
     });
+    Array.prototype.forEach.call(audSwitchEl.children, function (b) {
+      b.classList.toggle("is-active", b.getAttribute("data-aud") === state.aud);
+    });
   }
 
   window.addEventListener("hashchange", function () {
-    var prev = { q: state.q, tags: state.tags.slice(), cat: state.cat, genres: state.genres.slice() };
+    var prev = { q: state.q, tags: state.tags.slice(), cat: state.cat, genres: state.genres.slice(), aud: state.aud };
     readHash();
     var changed = prev.q !== state.q || prev.tags.join() !== state.tags.join() ||
-      prev.cat !== state.cat || prev.genres.join() !== state.genres.join();
+      prev.cat !== state.cat || prev.genres.join() !== state.genres.join() || prev.aud !== state.aud;
     if (changed) { renderGenreBar(); render(); }
   });
 

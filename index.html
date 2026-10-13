@@ -91,10 +91,17 @@
 
     <!-- 控制区 -->
     <section class="controls" id="entries">
-      <div class="cat-switch" id="cat-switch" role="tablist" aria-label="分类切换">
-        <button class="cat-btn is-active" data-cat="all" role="tab">全部</button>
-        <button class="cat-btn" data-cat="fun" role="tab">好玩</button>
-        <button class="cat-btn" data-cat="food" role="tab">好吃</button>
+      <div class="controls-left">
+        <div class="cat-switch" id="cat-switch" role="tablist" aria-label="分类切换">
+          <button class="cat-btn is-active" data-cat="all" role="tab">全部</button>
+          <button class="cat-btn" data-cat="fun" role="tab">好玩</button>
+          <button class="cat-btn" data-cat="food" role="tab">好吃</button>
+        </div>
+        <div class="cat-switch aud-switch" id="aud-switch" role="tablist" aria-label="我是谁">
+          <button class="cat-btn is-active" data-aud="all" role="tab">随便逛</button>
+          <button class="cat-btn" data-aud="busy" role="tab">高速上班族</button>
+          <button class="cat-btn" data-aud="bored" role="tab">无聊族</button>
+        </div>
       </div>
       <div class="result-count" id="result-count"></div>
       <button class="share-btn" id="share-btn" type="button" title="复制当前筛选 / 盲盒的分享链接">🔗 复制分享链接</button>

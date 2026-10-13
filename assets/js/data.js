@@ -566,6 +566,37 @@ window.GUIDE_GENRES = {
 };
 
 /* =========================================================
+   受众 & 耗时维度（高速上班族 / 无聊族 可以做什么）
+   与 GUIDE_ITEMS 通过 id 关联，便于单独维护：
+   - GUIDE_AUDIENCE: id -> "busy"(高速上班族) | "bored"(无聊族) | "both"(通用)
+   - GUIDE_DURATION: id -> 预计耗时（分钟，用于排序与卡片展示）
+   ========================================================= */
+window.GUIDE_AUDIENCE = {
+  /* 高速上班族：忙、碎片时间，优先短耗时 */
+  blindbox: "busy", slack: "busy", shortvideo: "busy", milktea: "busy",
+  luosifen: "busy", noodle: "busy", fried: "busy", dessert: "busy", dog: "busy",
+  /* 无聊族：闲、有大把时间，优先沉浸/长耗时 */
+  binge: "bored", replay: "bored", hotpot: "bored", aquarium: "bored",
+  parrot: "bored", gecko: "bored", pacmanfrog: "bored", cornsnake: "bored",
+  sugarglider: "bored", hedgehog: "bored", tarantula: "bored", hermitcrab: "bored",
+  axolotl: "bored", werewolf: "bored", jubensha: "bored", mahjong: "bored",
+  cards: "bored", perler: "bored", hiking: "bored",
+  /* 通用：两类人都能做 */
+  cat: "both", sport: "both", basketball: "both", swimming: "both", cycling: "both",
+  gym: "both", badminton: "both", yoga: "both", hamster: "both", rabbit: "both"
+};
+
+window.GUIDE_DURATION = {
+  binge: 150, blindbox: 15, cat: 20, replay: 90, slack: 20, shortvideo: 15,
+  milktea: 15, luosifen: 30, noodle: 20, fried: 25, hotpot: 90, dessert: 15,
+  sport: 45, basketball: 60, swimming: 45, cycling: 60, gym: 60, badminton: 60,
+  yoga: 45, dog: 25, aquarium: 40, hamster: 20, parrot: 30, rabbit: 20, gecko: 30,
+  pacmanfrog: 20, cornsnake: 25, sugarglider: 30, hedgehog: 20, tarantula: 20,
+  hermitcrab: 25, axolotl: 30, werewolf: 90, jubensha: 180, mahjong: 150,
+  cards: 60, perler: 60, hiking: 180
+};
+
+/* =========================================================
    职业爽感时刻表 —— 哪些职业在什么时候能发挥最大爽感
    契约（app.js 职业模块唯一依赖）：
    {
