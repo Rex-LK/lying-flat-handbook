@@ -86,7 +86,12 @@
     g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
     o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.03);
   }
-  function sfxClick() { beep(440, 0.07, "triangle", 0.05); }
+  function hashText(s) { var h = 0; for (var i = 0; i < (s || "").length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; }
+  function sfxClick(seed) {
+    var base = 380 + (hashText(seed || "") % 9) * 26; // 380~598Hz，按文案分布
+    beep(base, 0.06, "triangle", 0.05);
+    beep(base * 1.5, 0.05, "sine", 0.03, 0.004);
+  }
   function sfxPet() { beep(170, 0.26, "sine", 0.09); beep(230, 0.22, "sine", 0.05, 0.02); }
   function sfxFeed() { beep(520, 0.07, "square", 0.05); beep(700, 0.07, "square", 0.05, 0.07); }
   function sfxToy() { beep(320, 0.1, "sine", 0.07); beep(620, 0.09, "sine", 0.05, 0.05); }
@@ -103,7 +108,7 @@
 
   function btn(label, cls, onClick) {
     var b = el("button", "lab-btn" + (cls ? " " + cls : ""), label);
-    b.addEventListener("click", function () { sfxClick(); if (onClick) onClick(); });
+    b.addEventListener("click", function () { sfxClick(label); if (onClick) onClick(); });
     return b;
   }
   function captionOf(container) {
