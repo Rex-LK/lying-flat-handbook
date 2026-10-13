@@ -290,6 +290,21 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
 .mylist-btn.is-active { color: #fff; background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 16px rgba(255, 46, 136, 0.45); }
 .mylist-btn.is-active b { color: #fff; }
 
+/* ---------- 控制区：点赞（Star）按钮 ---------- */
+.star-btn {
+  display: inline-flex; align-items: center; gap: 4px; text-decoration: none;
+  color: #fff; border: none;
+  background: linear-gradient(135deg, #ff8a00, var(--pink));
+  box-shadow: 0 0 18px rgba(255, 46, 136, 0.5);
+  animation: starPulse 2.4s ease-in-out infinite;
+}
+.star-btn:hover { transform: translateY(-2px) scale(1.06); color: #fff; }
+.star-btn:active { transform: translateY(0) scale(0.96); }
+@keyframes starPulse {
+  0%, 100% { box-shadow: 0 0 14px rgba(255, 46, 136, 0.45); }
+  50% { box-shadow: 0 0 24px rgba(255, 138, 0, 0.7); }
+}
+
 /* ---------- 实验按钮选中态（咖啡等可调研磨/水温） ---------- */
 .lab-btn.active { background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 14px rgba(255, 46, 136, 0.4); color: #fff; }
 
