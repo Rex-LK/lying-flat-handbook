@@ -70,9 +70,42 @@
       }
     };
   }
+  /* ---------- 轻量音效（Web Audio 合成，无需素材） ---------- */
+  var soundOn = true, _ac = null;
+  function audioCtx() {
+    if (!_ac) { try { _ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { _ac = null; } }
+    if (_ac && _ac.state === "suspended") _ac.resume();
+    return _ac;
+  }
+  function beep(freq, dur, type, vol, when) {
+    if (!soundOn) return;
+    var ac = audioCtx(); if (!ac) return;
+    var t0 = ac.currentTime + (when || 0);
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = type || "sine"; o.frequency.setValueAtTime(freq, t0);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(vol || 0.07, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.03);
+  }
+  function sfxClick() { beep(440, 0.07, "triangle", 0.05); }
+  function sfxPet() { beep(170, 0.26, "sine", 0.09); beep(230, 0.22, "sine", 0.05, 0.02); }
+  function sfxFeed() { beep(520, 0.07, "square", 0.05); beep(700, 0.07, "square", 0.05, 0.07); }
+  function sfxToy() { beep(320, 0.1, "sine", 0.07); beep(620, 0.09, "sine", 0.05, 0.05); }
+  function sfxFrisbee() { beep(240, 0.2, "sawtooth", 0.05); }
+  (function bindSoundToggle() {
+    var sb = document.getElementById("lab-sound");
+    if (!sb) return;
+    sb.addEventListener("click", function () {
+      soundOn = !soundOn;
+      sb.textContent = soundOn ? "🔊" : "🔇";
+      if (soundOn) audioCtx();
+    });
+  })();
+
   function btn(label, cls, onClick) {
     var b = el("button", "lab-btn" + (cls ? " " + cls : ""), label);
-    if (onClick) b.addEventListener("click", onClick);
+    b.addEventListener("click", function () { sfxClick(); if (onClick) onClick(); });
     return b;
   }
   function captionOf(container) {
@@ -265,12 +298,14 @@
       oxy = clamp(oxy + 12, 0, 100); mood = clamp(mood + 9, 0, 100); lastPet = performance.now();
       ripples.push({ r: 10, a: 1 });
       if (mood > 60 && hearts.length < 8) hearts.push({ x: rand(0.3, 0.7), y: 0.42, vy: -0.004, a: 1 });
+      sfxPet();
       upd();
       setCaption(container, mood > 80 ? "呼噜呼噜～催产素拉满，它已经把你当同类了。" : "指尖绒毛 + 呼噜 ASMR，依恋的化学物质正在分泌。");
     }
     function feed() {
       full = clamp(full + 24, 0, 100); mood = clamp(mood + 4, 0, 100); lastFeed = performance.now();
       for (var i = 0; i < 6; i++) eats.push({ x: rand(0.44, 0.56), y: 0.82, vy: -0.002, a: 1 });
+      sfxFeed();
       upd();
       setCaption(container, full > 85 ? "碗见底了，它满意地舔了舔嘴——被投喂的安全感也是奖赏。" : "闻到猫粮味了，它凑过来小口小口地吃。");
     }
@@ -278,6 +313,7 @@
       play = clamp(play + 20, 0, 100); mood = clamp(mood + 7, 0, 100); lastToy = performance.now();
       toy.active = true; toy.life = 1; toy.x = rand(0.2, 0.8); toy.y = rand(0.3, 0.55);
       toy.vx = (Math.random() < 0.5 ? -1 : 1) * rand(0.002, 0.005); toy.vy = 0;
+      sfxToy();
       upd();
       setCaption(container, "毛线球滚开了！它压低身子、尾巴尖抖啊抖，狩猎本能上线。");
     }
@@ -1183,11 +1219,13 @@
     function pet() {
       pets++; oxy = clamp(oxy + 14, 0, 100); calm = clamp(calm + 10, 0, 100); lastPet = performance.now();
       if (oxy > 65 && hearts.length < 6) hearts.push({ x: rand(0.3, 0.7), y: 0.32, vy: -0.004, a: 1 });
+      sfxPet();
       upd();
       setCaption(container, oxy > 80 ? "催产素拉满：它把攒了一整天的热情全砸给你了。" : "掌心下的体温 + 停不下来的尾巴，皮质醇正在下降，这才是真正的减压。");
     }
     function feed() {
       full = clamp(full + 24, 0, 100); oxy = clamp(oxy + 4, 0, 100); lastFeed = performance.now();
+      sfxFeed();
       upd();
       setCaption(container, full > 85 ? "狗碗空了，它满足地打了个嗝——被投喂的安全感也是奖赏。" : "闻到肉味了，它凑过来吧唧吧唧地吃，尾巴摇成螺旋桨。");
     }
@@ -1195,6 +1233,7 @@
       play = clamp(play + 22, 0, 100); oxy = clamp(oxy + 6, 0, 100); lastToy = performance.now();
       ball.active = true; ball.life = 1; ball.x = rand(0.15, 0.85); ball.y = 0.66;
       ball.vx = (Math.random() < 0.5 ? -1 : 1) * rand(0.003, 0.006); ball.vy = 0;
+      sfxFrisbee();
       upd();
       setCaption(container, "飞盘抛出去了！它弓着背、耳朵竖起，眼睛死死盯着目标。");
     }
