@@ -337,6 +337,61 @@
       '<span class="lb-date">' + dayText() + ' · 今日限定</span>' +
       "</button>";
   }
+  /* ---------- 盲盒下方：相关推荐（每次 3 个 + 换一批） ---------- */
+  function dopaOf(id) { return (window.GUIDE_DOPAMINE && window.GUIDE_DOPAMINE[id]) || 0; }
+  function sharedTags(a, b) {
+    var n = 0;
+    for (var i = 0; i < a.tags.length; i++) if (b.tags.indexOf(a.tags[i]) >= 0) n++;
+    return n;
+  }
+  function shuffleArr(arr) {
+    for (var i = arr.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+    return arr;
+  }
+  // 候选排序：标签重合度为主、多巴胺为辅
+  function rankedPool(item) {
+    var arr = ITEMS.filter(function (it) { return it.id !== item.id; });
+    arr.sort(function (a, b) {
+      var oa = sharedTags(item, a), ob = sharedTags(item, b);
+      if (ob !== oa) return ob - oa;
+      return dopaOf(b) - dopaOf(a);
+    });
+    return arr;
+  }
+  var luckyRecoOrder = [];  // 候选 id 顺序（按相关度）
+  var luckyRecoCursor = 0;  // 当前批次起点
+  function resetRecos() { luckyRecoOrder = []; luckyRecoCursor = 0; }
+  function ensureRecoOrder(item) {
+    if (luckyRecoOrder.length) return;
+    luckyRecoOrder = rankedPool(item).map(function (it) { return it.id; });
+    luckyRecoCursor = 0;
+  }
+  function currentRecos(item) {
+    ensureRecoOrder(item);
+    var n = luckyRecoOrder.length, out = [];
+    for (var i = 0; i < 3 && i < n; i++) {
+      var it = itemById(luckyRecoOrder[(luckyRecoCursor + i) % n]);
+      if (it) out.push(it);
+    }
+    return out;
+  }
+  function recoCardHtml(it) {
+    return '<button class="lb-reco" type="button" data-reco="' + it.id + '">' +
+      '<span class="lb-reco-emoji">' + it.emoji + "</span>" +
+      '<span class="lb-reco-body"><b>' + escapeHtml(it.name) + "</b>" +
+      '<small>' + escapeHtml(it.hook) + "</small></span>" +
+      '<span class="lb-reco-go">打开 →</span></button>';
+  }
+  function recosHtml(item) { return currentRecos(item).map(recoCardHtml).join(""); }
+  function shuffleRecos() {
+    var n = luckyRecoOrder.length;
+    if (!n) return;
+    luckyRecoCursor = (luckyRecoCursor + 3) % n;
+    if (luckyRecoCursor === 0) shuffleArr(luckyRecoOrder); // 绕完一圈换新顺序，增加变化
+    var list = document.getElementById("lb-recos-list");
+    if (list) list.innerHTML = recosHtml(luckyState.item);
+  }
+
   function openedHtml(item) {
     var tagsHtml = item.tags.map(function (t) {
       return '<button class="lb-tag" type="button" data-tag="' + escapeHtml(t) + '">#' + escapeHtml(t) + "</button>";
@@ -361,6 +416,13 @@
         '<button class="lb-btn lb-poster" id="lb-poster" type="button">🖼️ 今日签</button>' +
         '<span class="lb-count">今日第 <b>' + luckyState.draws + "</b> 抽</span>" +
       "</div>" +
+      '<div class="lb-recos">' +
+        '<div class="lb-recos-head">' +
+          '<span class="lb-recos-title">🔎 顺着这条，再看看这几个</span>' +
+          '<button class="lb-btn lb-shuffle" id="lb-shuffle" type="button">🎲 换一批</button>' +
+        "</div>" +
+        '<div class="lb-recos-list" id="lb-recos-list">' + recosHtml(item) + "</div>" +
+      "</div>" +
       "</div>";
   }
   function renderLucky() {
@@ -374,6 +436,7 @@
   function openBox(item, animate) {
     if (!LUCKY_READY || !item) return;
     luckyState.item = item;
+    resetRecos();
     luckyState.opened = true;
     if (luckyState.used.indexOf(item.id) < 0) luckyState.used.push(item.id);
     luckyState.draws += 1;
@@ -418,6 +481,9 @@
       if (t.closest("#lb-again")) { openBox(nextItem(), true); return; }
       if (t.closest("#lb-play")) { if (luckyState.item) openModal(luckyState.item); return; }
       if (t.closest("#lb-poster")) { if (luckyState.item && window.GUIDE_PERSONA) window.GUIDE_PERSONA.posterFromItem(luckyState.item); return; }
+      if (t.closest("#lb-shuffle")) { shuffleRecos(); return; }
+      var rc = t.closest("[data-reco]");
+      if (rc) { var rit = itemById(rc.getAttribute("data-reco")); if (rit) openModal(rit); return; }
       var tg = t.closest(".lb-tag");
       if (tg) { toggleTag(tg.getAttribute("data-tag")); scrollToSection("entries"); }
     });

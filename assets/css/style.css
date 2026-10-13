@@ -586,6 +586,32 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 .lb-count { margin-left: auto; font-size: 12px; color: var(--text-dim); }
 .lb-count b { color: var(--amber); font-variant-numeric: tabular-nums; }
 
+/* 盲盒下方：相关推荐 + 换一批 */
+.lb-recos { position: relative; margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--glass-line); }
+.lb-recos-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.lb-recos-title { font-size: 13px; color: var(--text-dim); font-weight: 600; }
+.lb-shuffle { font-size: 12px; padding: 6px 12px; }
+.lb-shuffle:hover { background: rgba(255,176,32,0.16); border-color: var(--amber); }
+.lb-recos-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.lb-reco {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; cursor: pointer;
+  padding: 12px; border-radius: var(--radius-sm); font-family: inherit; color: var(--text);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-line);
+  transition: transform .2s, background .2s, border-color .2s, box-shadow .2s;
+}
+.lb-reco:hover {
+  transform: translateY(-3px); border-color: rgba(0,229,255,0.45);
+  background: rgba(0,229,255,0.08); box-shadow: 0 0 20px rgba(0,229,255,0.18);
+}
+.lb-reco-emoji { font-size: 22px; line-height: 1; }
+.lb-reco-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.lb-reco-body b { font-size: 13.5px; }
+.lb-reco-body small {
+  font-size: 11.5px; color: var(--text-dim); line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.lb-reco-go { margin-top: auto; font-size: 11.5px; color: var(--cyan); }
+
 /* ---------- 职业爽感时刻表 ---------- */
 .jobs { margin: 46px 0 10px; padding-top: 40px; border-top: 1px dashed var(--glass-line); }
 .jobs-head {
@@ -771,6 +797,7 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   .lucky-box { min-width: 0; flex-basis: 100%; }
   .lb-result { flex-direction: column; gap: 8px; }
   .lb-count { margin-left: 0; }
+  .lb-recos-list { grid-template-columns: 1fr; }
 }
 
 /* ---------- 分享 / 回到顶部 ---------- */
