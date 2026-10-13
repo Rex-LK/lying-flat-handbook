@@ -471,6 +471,7 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 .lab-btn:active { transform: translateY(0) scale(.97); }
 .lab-btn.cyan { background: linear-gradient(135deg, var(--cyan), var(--purple)); box-shadow: 0 0 18px rgba(0,229,255,0.4); }
 .lab-btn.amber { background: linear-gradient(135deg, var(--amber), var(--red)); box-shadow: 0 0 18px rgba(255,176,32,0.4); }
+.lab-btn.pink { background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 18px rgba(255,46,136,0.45); }
 .lab-center {
   position: absolute; left: 12px; right: 12px; bottom: 72px; z-index: 2;
   display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;

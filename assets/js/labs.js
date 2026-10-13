@@ -249,55 +249,118 @@
     var mc = makeCanvas(container);
     var center = makeCenter(container);
     var read = makeReadout(container);
-    var b = btn("🖐️ 抚摸一下", "");
-    center.appendChild(b);
-    var oxy = 0, mood = 0, lastPet = -9999, ripples = [], hearts = [];
-    b.addEventListener("click", function () {
-      oxy = clamp(oxy + 12, 0, 100); mood = clamp(mood + 9, 0, 100); lastPet = performance.now();
-      ripples.push({ r: 10, a: 1 });
-      if (mood > 60 && hearts.length < 8) hearts.push({ x: rand(0.3, 0.7), y: 0.5, vy: -0.004, a: 1 });
+    var oxy = 0, mood = 0, full = 0, play = 0;
+    var lastPet = -9999, lastFeed = -9999, lastToy = -9999;
+    var ripples = [], hearts = [], eats = [], blink = 1, blinkT = 0;
+    var toy = { active: false, x: 0.5, y: 0.45, vx: 0.003, vy: 0, life: 0, spin: 0 };
+    function upd() {
       read.set([
         { val: Math.round(oxy) + "%", label: "催产素", kind: "good" },
-        { val: Math.round(mood) + "%", label: "猫的心情", kind: "cyan" }
+        { val: Math.round(mood) + "%", label: "猫的心情", kind: "cyan" },
+        { val: Math.round(full) + "%", label: "饱腹度", kind: "warn" },
+        { val: Math.round(play) + "%", label: "玩耍欲", kind: "amber" }
       ]);
+    }
+    function pet() {
+      oxy = clamp(oxy + 12, 0, 100); mood = clamp(mood + 9, 0, 100); lastPet = performance.now();
+      ripples.push({ r: 10, a: 1 });
+      if (mood > 60 && hearts.length < 8) hearts.push({ x: rand(0.3, 0.7), y: 0.42, vy: -0.004, a: 1 });
+      upd();
       setCaption(container, mood > 80 ? "呼噜呼噜～催产素拉满，它已经把你当同类了。" : "指尖绒毛 + 呼噜 ASMR，依恋的化学物质正在分泌。");
-    });
+    }
+    function feed() {
+      full = clamp(full + 24, 0, 100); mood = clamp(mood + 4, 0, 100); lastFeed = performance.now();
+      for (var i = 0; i < 6; i++) eats.push({ x: rand(0.44, 0.56), y: 0.82, vy: -0.002, a: 1 });
+      upd();
+      setCaption(container, full > 85 ? "碗见底了，它满意地舔了舔嘴——被投喂的安全感也是奖赏。" : "闻到猫粮味了，它凑过来小口小口地吃。");
+    }
+    function toyPlay() {
+      play = clamp(play + 20, 0, 100); mood = clamp(mood + 7, 0, 100); lastToy = performance.now();
+      toy.active = true; toy.life = 1; toy.x = rand(0.2, 0.8); toy.y = rand(0.3, 0.55);
+      toy.vx = (Math.random() < 0.5 ? -1 : 1) * rand(0.002, 0.005); toy.vy = 0;
+      upd();
+      setCaption(container, "毛线球滚开了！它压低身子、尾巴尖抖啊抖，狩猎本能上线。");
+    }
+    center.appendChild(btn("🖐️ 抚摸", "cyan", pet));
+    center.appendChild(btn("🍖 喂食", "amber", feed));
+    center.appendChild(btn("🧶 玩具", "pink", toyPlay));
+    upd();
     var lp = loop(function (t) {
-      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h, cx = w / 2, cy = h / 2 - 6;
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h, cx = w / 2, cy = h * 0.40;
       ctx.clearRect(0, 0, w, h);
-      var purr = (t - lastPet < 1200) ? 1 + Math.sin(t / 40) * 0.04 : 1;
+      var petP = clamp(1 - (t - lastPet) / 1300, 0, 1);
+      var feedP = clamp(1 - (t - lastFeed) / 1100, 0, 1);
+      var toyP = clamp(1 - (t - lastToy) / 1600, 0, 1);
+      // 毛线球
+      if (toy.active) {
+        toy.x += toy.vx; toy.y += toy.vy; toy.vy += 0.00018; toy.spin += 0.15;
+        if (toy.y > 0.72) { toy.y = 0.72; toy.vy *= -0.5; }
+        if (toy.x < 0.1 || toy.x > 0.9) toy.vx *= -1;
+        toy.life -= 0.004; if (toy.life <= 0) toy.active = false;
+        ctx.save(); ctx.translate(toy.x * w, toy.y * h); ctx.rotate(toy.spin);
+        ctx.fillStyle = "#FF6FA5"; ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, 13, 0, 6.29); ctx.fill(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(-5, -4, 4, 0, 6.29); ctx.arc(4, 3, 4, 0, 6.29); ctx.stroke();
+        ctx.restore();
+      }
+      // 食盆
+      if (feedP > 0.02 || full > 0) {
+        ctx.fillStyle = "#5A6178"; ctx.beginPath(); ctx.ellipse(cx, h * 0.84, 34, 12, 0, 0, 6.29); ctx.fill();
+        ctx.fillStyle = "#3A3F55"; ctx.beginPath(); ctx.ellipse(cx, h * 0.83, 30, 9, 0, 0, 6.29); ctx.fill();
+        if (full > 4) { ctx.fillStyle = "#FFB020"; for (var k = 0; k < 5; k++) { ctx.beginPath(); ctx.arc(cx - 18 + k * 9, h * 0.82, 3, 0, 6.29); ctx.fill(); } }
+      }
+      eats.forEach(function (e) { e.y += e.vy; e.a -= 0.02; }); eats = eats.filter(function (e) { return e.a > 0; });
+      eats.forEach(function (e) { ctx.globalAlpha = clamp(e.a, 0, 1); ctx.fillStyle = "#FFB020"; ctx.beginPath(); ctx.arc(e.x * w, e.y * h, 2.5, 0, 6.29); ctx.fill(); }); ctx.globalAlpha = 1;
+      // 眨眼
+      blinkT++; if (blinkT > 160) { blink = 0; if (blinkT > 175) { blink = 1; blinkT = 0; } }
+      var lean = feedP * 18, tilt = toyP * (toy.x < 0.5 ? -0.18 : 0.18);
+      var breathe = 1 + petP * Math.sin(t / 40) * 0.04;
+      ctx.save(); ctx.translate(cx, cy + lean);
+      // 尾巴
+      ctx.save(); ctx.translate(-34, 30); ctx.rotate(Math.sin(t / (play > 30 ? 55 : 95)) * (0.3 + play / 200) - 0.4);
+      ctx.strokeStyle = "#3A3F55"; ctx.lineWidth = 9; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-22, -6, -30, -22); ctx.stroke(); ctx.restore();
+      // 身体
+      ctx.fillStyle = "#3A3F55"; ctx.beginPath(); ctx.ellipse(0, 34, 30, 26, 0, 0, 6.29); ctx.fill();
       // 头
-      ctx.save(); ctx.translate(cx, cy); ctx.scale(purr, purr);
+      ctx.save(); ctx.rotate(tilt); ctx.scale(breathe, breathe);
       ctx.fillStyle = "#3A3F55"; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(0, 0, 40, 0, 6.29); ctx.fill();
-      // 耳朵
-      ctx.beginPath(); ctx.moveTo(-34, -22); ctx.lineTo(-14, -44); ctx.lineTo(-6, -24); ctx.closePath(); ctx.fill();
-      ctx.beginPath(); ctx.moveTo(34, -22); ctx.lineTo(14, -44); ctx.lineTo(6, -24); ctx.closePath(); ctx.fill();
-      // 眼
+      ctx.beginPath(); ctx.arc(0, 0, 38, 0, 6.29); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-32, -20); ctx.lineTo(-13, -42); ctx.lineTo(-5, -22); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(32, -20); ctx.lineTo(13, -42); ctx.lineTo(5, -22); ctx.closePath(); ctx.fill();
       ctx.fillStyle = "#00E5A0"; ctx.shadowColor = "#00E5A0"; ctx.shadowBlur = 12;
-      ctx.beginPath(); ctx.ellipse(-14, -4, 5, 7, 0, 0, 6.29); ctx.fill();
-      ctx.beginPath(); ctx.ellipse(14, -4, 5, 7, 0, 0, 6.29); ctx.fill();
+      if (petP > 0.25 || mood > 80) {
+        ctx.shadowBlur = 0; ctx.strokeStyle = "#00E5A0"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(-13, -3, 6, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+        ctx.beginPath(); ctx.arc(13, -3, 6, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+      } else if (blink < 0.5) {
+        ctx.shadowBlur = 0; ctx.strokeStyle = "#00E5A0"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(-17, -3); ctx.lineTo(-9, -3); ctx.moveTo(9, -3); ctx.lineTo(17, -3); ctx.stroke();
+      } else {
+        ctx.beginPath(); ctx.ellipse(-13, -4, 5, 7, 0, 0, 6.29); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(13, -4, 5, 7, 0, 0, 6.29); ctx.fill();
+      }
       ctx.shadowBlur = 0;
-      // 鼻
-      ctx.fillStyle = "#FF2E88"; ctx.beginPath(); ctx.moveTo(0, 6); ctx.lineTo(-5, 2); ctx.lineTo(5, 2); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#FF2E88"; ctx.beginPath(); ctx.moveTo(0, 5); ctx.lineTo(-5, 1); ctx.lineTo(5, 1); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-4, 6); ctx.lineTo(-26, 2); ctx.moveTo(-4, 9); ctx.lineTo(-26, 12);
+      ctx.moveTo(4, 6); ctx.lineTo(26, 2); ctx.moveTo(4, 9); ctx.lineTo(26, 12); ctx.stroke();
+      ctx.restore();
       ctx.restore();
       // 呼噜波纹
-      ripples.forEach(function (rp) { rp.r += 1.6; rp.a -= 0.02; });
-      ripples = ripples.filter(function (r) { return r.a > 0; });
+      ripples.forEach(function (rp) { rp.r += 1.6; rp.a -= 0.02; }); ripples = ripples.filter(function (r) { return r.a > 0; });
       ripples.forEach(function (rp) {
         ctx.globalAlpha = clamp(rp.a, 0, 1) * 0.5; ctx.strokeStyle = "#00E5A0"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(cx, cy, rp.r, 0, 6.29); ctx.stroke();
-      });
-      ctx.globalAlpha = 1;
+        ctx.beginPath(); ctx.arc(cx, cy + lean, rp.r, 0, 6.29); ctx.stroke();
+      }); ctx.globalAlpha = 1;
       // 爱心
-      hearts.forEach(function (ht) { ht.y += ht.vy; ht.a -= 0.008; });
-      hearts = hearts.filter(function (x) { return x.a > 0; });
+      hearts.forEach(function (ht) { ht.y += ht.vy; ht.a -= 0.008; }); hearts = hearts.filter(function (x) { return x.a > 0; });
       hearts.forEach(function (ht) {
         ctx.globalAlpha = clamp(ht.a, 0, 1); ctx.fillStyle = "#FF2E88";
         drawHeart(ctx, ht.x * w, ht.y * h, 10);
-      });
-      ctx.globalAlpha = 1;
-      oxy = clamp(oxy - 0.03, 0, 100); mood = clamp(mood - 0.02, 0, 100);
+      }); ctx.globalAlpha = 1;
+      oxy = clamp(oxy - 0.03, 0, 100); mood = clamp(mood - 0.02, 0, 100); full = clamp(full - 0.05, 0, 100); play = clamp(play - 0.04, 0, 100);
     });
     lp.start();
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
@@ -1106,50 +1169,80 @@
     var mc = makeCanvas(container);
     var center = makeCenter(container);
     var read = makeReadout(container);
-    var oxy = 25, calm = 20, pets = 0, gaze = 0, hearts = [];
-    center.appendChild(btn("🐶 撸一把", "", function () {
-      pets++;
-      oxy = clamp(oxy + 14, 0, 100); calm = clamp(calm + 10, 0, 100);
-      if (oxy > 65 && hearts.length < 6) hearts.push({ x: rand(0.3, 0.7), y: 0.4, vy: -0.004, a: 1 });
-      upd();
-      setCaption(container, oxy > 80 ? "催产素拉满：它把攒了一整天的热情全砸给你了。" : "掌心下的体温 + 停不下来的尾巴，皮质醇正在下降，这才是真正的减压。");
-    }));
-    center.appendChild(btn("👀 对视 3 秒", "cyan", function () {
-      oxy = clamp(oxy + 18, 0, 100); gaze = 1; upd();
-      setCaption(container, "对视会让双方的催产素同步升高——人和狗之间罕见的双向奔赴。");
-    }));
+    var oxy = 25, calm = 20, full = 0, play = 0, pets = 0, hearts = [];
+    var lastPet = -9999, lastFeed = -9999, lastToy = -9999;
+    var ball = { active: false, x: 0.5, y: 0.66, vx: 0.004, vy: 0, life: 0 };
     function upd() {
       read.set([
         { val: Math.round(oxy) + "%", label: "催产素", kind: "good" },
         { val: Math.round(calm) + "%", label: "减压/副交感", kind: "cyan" },
-        { val: pets, label: "撸的次数", kind: "warn" }
+        { val: Math.round(full) + "%", label: "饱腹度", kind: "warn" },
+        { val: pets, label: "抚摸次数", kind: "amber" }
       ]);
     }
+    function pet() {
+      pets++; oxy = clamp(oxy + 14, 0, 100); calm = clamp(calm + 10, 0, 100); lastPet = performance.now();
+      if (oxy > 65 && hearts.length < 6) hearts.push({ x: rand(0.3, 0.7), y: 0.32, vy: -0.004, a: 1 });
+      upd();
+      setCaption(container, oxy > 80 ? "催产素拉满：它把攒了一整天的热情全砸给你了。" : "掌心下的体温 + 停不下来的尾巴，皮质醇正在下降，这才是真正的减压。");
+    }
+    function feed() {
+      full = clamp(full + 24, 0, 100); oxy = clamp(oxy + 4, 0, 100); lastFeed = performance.now();
+      upd();
+      setCaption(container, full > 85 ? "狗碗空了，它满足地打了个嗝——被投喂的安全感也是奖赏。" : "闻到肉味了，它凑过来吧唧吧唧地吃，尾巴摇成螺旋桨。");
+    }
+    function toyPlay() {
+      play = clamp(play + 22, 0, 100); oxy = clamp(oxy + 6, 0, 100); lastToy = performance.now();
+      ball.active = true; ball.life = 1; ball.x = rand(0.15, 0.85); ball.y = 0.66;
+      ball.vx = (Math.random() < 0.5 ? -1 : 1) * rand(0.003, 0.006); ball.vy = 0;
+      upd();
+      setCaption(container, "飞盘抛出去了！它弓着背、耳朵竖起，眼睛死死盯着目标。");
+    }
+    center.appendChild(btn("🖐️ 抚摸", "cyan", pet));
+    center.appendChild(btn("🦴 喂食", "amber", feed));
+    center.appendChild(btn("🥏 玩具", "pink", toyPlay));
     upd();
     var lp = loop(function (t) {
       var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h, cx = w / 2, cy = h * 0.38;
       ctx.clearRect(0, 0, w, h);
-      // 尾巴（不受位移影响，单独摇晃）
-      ctx.save(); ctx.translate(cx + 46, cy + 44); ctx.rotate(Math.sin(t / 70) * (0.35 + oxy / 220) - 0.5);
+      var petP = clamp(1 - (t - lastPet) / 1300, 0, 1);
+      var feedP = clamp(1 - (t - lastFeed) / 1100, 0, 1);
+      var toyP = clamp(1 - (t - lastToy) / 1600, 0, 1);
+      var wag = (play > 30 || petP > 0.3) ? 0.55 : 0.35;
+      // 飞盘
+      if (ball.active) {
+        ball.x += ball.vx; ball.y += ball.vy; ball.vy += 0.00022;
+        if (ball.y > 0.74) { ball.y = 0.74; ball.vy *= -0.5; }
+        if (ball.x < 0.08 || ball.x > 0.92) ball.vx *= -1;
+        ball.life -= 0.004; if (ball.life <= 0) ball.active = false;
+        ctx.save(); ctx.translate(ball.x * w, ball.y * h);
+        ctx.fillStyle = "#FFD23F"; ctx.beginPath(); ctx.ellipse(0, 0, 16, 6, 0, 0, 6.29); ctx.fill();
+        ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(0, 0, 16, 6, 0, 0, 6.29); ctx.stroke();
+        ctx.restore();
+      }
+      // 食盆
+      if (feedP > 0.02 || full > 0) {
+        ctx.fillStyle = "#5A6178"; ctx.beginPath(); ctx.ellipse(cx, h * 0.86, 38, 13, 0, 0, 6.29); ctx.fill();
+        ctx.fillStyle = "#3A3F55"; ctx.beginPath(); ctx.ellipse(cx, h * 0.85, 33, 10, 0, 0, 6.29); ctx.fill();
+        if (full > 4) { ctx.fillStyle = "#FFB020"; for (var k = 0; k < 5; k++) { ctx.beginPath(); ctx.arc(cx - 20 + k * 10, h * 0.84, 3.2, 0, 6.29); ctx.fill(); } }
+      }
+      // 尾巴
+      ctx.save(); ctx.translate(cx + 46, cy + 44); ctx.rotate(Math.sin(t / 60) * wag - 0.5);
       ctx.strokeStyle = "#8A5A2B"; ctx.lineWidth = 9; ctx.lineCap = "round";
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(18, -12, 32, -26); ctx.stroke();
-      ctx.restore();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(18, -12, 32, -26); ctx.stroke(); ctx.restore();
+      // 身体
       ctx.fillStyle = "#C98A4B"; ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(cx, cy + 46, 44, 34, 0, 0, 6.29); ctx.fill(); ctx.stroke();
-      [-1, 1].forEach(function (s) {
-        ctx.fillStyle = "#B57A3E";
-        roundRect(ctx, cx + s * 24 - 9, cy + 64, 18, 26, 8); ctx.fill();
-      });
-      var bob = Math.sin(t / 320) * 2;
+      [-1, 1].forEach(function (s) { ctx.fillStyle = "#B57A3E"; roundRect(ctx, cx + s * 24 - 9, cy + 64, 18, 26, 8); ctx.fill(); });
+      var bob = Math.sin(t / 320) * 2 + feedP * 6;
+      var tilt = toyP * (ball.x < 0.5 ? -0.12 : 0.12);
+      ctx.save(); ctx.translate(cx, cy + bob); ctx.rotate(tilt);
       ctx.fillStyle = "#C98A4B";
-      ctx.beginPath(); ctx.ellipse(cx, cy + bob, 44, 40, 0, 0, 6.29); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(0, 0, 44, 40, 0, 0, 6.29); ctx.fill(); ctx.stroke();
+      [-1, 1].forEach(function (s) { ctx.fillStyle = "#8A5A2B"; ctx.beginPath(); ctx.ellipse(s * 42, 10, 13, 30, s * 0.22, 0, 0, 6.29); ctx.fill(); });
+      var happy = oxy > 55 || toyP > 0.3;
       [-1, 1].forEach(function (s) {
-        ctx.fillStyle = "#8A5A2B";
-        ctx.beginPath(); ctx.ellipse(cx + s * 42, cy + 10 + bob, 13, 30, s * 0.22, 0, 6.29); ctx.fill();
-      });
-      var happy = oxy > 55;
-      [-1, 1].forEach(function (s) {
-        var ex = cx + s * 16, ey = cy - 6 + bob;
+        var ex = s * 16, ey = -6;
         if (happy) {
           ctx.strokeStyle = "#1b1108"; ctx.lineWidth = 3;
           ctx.beginPath(); ctx.arc(ex, ey + 3, 6, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke();
@@ -1158,29 +1251,22 @@
           ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(ex + s * 2, ey - 2, 2, 0, 6.29); ctx.fill();
         }
       });
-      ctx.fillStyle = "#2a1a10";
-      ctx.beginPath(); ctx.ellipse(cx, cy + 14 + bob, 8, 6, 0, 0, 6.29); ctx.fill();
+      ctx.fillStyle = "#2a1a10"; ctx.beginPath(); ctx.ellipse(0, 14, 8, 6, 0, 0, 6.29); ctx.fill();
       ctx.strokeStyle = "#2a1a10"; ctx.lineWidth = 2.5;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy + 20 + bob); ctx.lineTo(cx - 8, cy + 27 + bob);
-      ctx.moveTo(cx, cy + 20 + bob); ctx.lineTo(cx + 8, cy + 27 + bob); ctx.stroke();
-      if (oxy > 70) {
-        ctx.fillStyle = "#FF6FA5";
-        roundRect(ctx, cx - 7, cy + 25 + bob, 14, 12 + Math.sin(t / 180) * 2, 6); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(0, 20); ctx.lineTo(-8, 27); ctx.moveTo(0, 20); ctx.lineTo(8, 27); ctx.stroke();
+      if (happy) { ctx.fillStyle = "#FF6FA5"; roundRect(ctx, -7, 25, 14, 12 + Math.sin(t / 180) * 2, 6); ctx.fill(); }
+      if (petP > 0.3 || toyP > 0.3) {
+        var g = clamp(petP > toyP ? petP : toyP, 0, 1);
+        ctx.strokeStyle = "rgba(255,46,136," + g * 0.5 + ")"; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(0, 0, 54, 0, 6.29); ctx.stroke();
       }
-      if (gaze > 0) {
-        gaze -= 0.01;
-        ctx.strokeStyle = "rgba(255,46,136," + clamp(gaze, 0, 1) * 0.55 + ")"; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(cx, cy + bob, 54 + (1 - gaze) * 12, 0, 6.29); ctx.stroke();
-      }
-      hearts.forEach(function (ht) { ht.y += ht.vy; ht.a -= 0.008; });
-      hearts = hearts.filter(function (x) { return x.a > 0; });
+      ctx.restore();
+      hearts.forEach(function (ht) { ht.y += ht.vy; ht.a -= 0.008; }); hearts = hearts.filter(function (x) { return x.a > 0; });
       hearts.forEach(function (ht) {
         ctx.globalAlpha = clamp(ht.a, 0, 1); ctx.fillStyle = "#FF2E88";
         drawHeart(ctx, ht.x * w, ht.y * h, 10);
-      });
-      ctx.globalAlpha = 1;
-      oxy = clamp(oxy - 0.035, 0, 100); calm = clamp(calm - 0.02, 0, 100);
+      }); ctx.globalAlpha = 1;
+      oxy = clamp(oxy - 0.035, 0, 100); calm = clamp(calm - 0.02, 0, 100); full = clamp(full - 0.05, 0, 100); play = clamp(play - 0.04, 0, 100);
     });
     lp.start();
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
