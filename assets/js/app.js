@@ -158,6 +158,7 @@
 
   /* ---------- 渲染：标签云 ---------- */
   function renderTagCloud() {
+    if (!tagcloudEl) return;
     tagcloudEl.innerHTML = "";
     TAGS.slice().sort(function (a, b) { return b.count - a.count; }).forEach(function (tg) {
       var chip = document.createElement("button");
@@ -171,6 +172,7 @@
 
   /* ---------- 渲染：类别栏 ---------- */
   function renderGenreBar() {
+    if (!genrebarEl) return;
     genrebarEl.innerHTML = "";
     var label = document.createElement("span");
     label.className = "genre-label";
