@@ -293,7 +293,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
 /* ---------- 控制区：点赞（Star）按钮 ---------- */
 .star-btn {
   display: inline-flex; align-items: center; gap: 4px; text-decoration: none;
-  color: #fff; border: none;
+  color: #fff; border: none; white-space: nowrap; margin-left: auto;
+  padding: 9px 16px; border-radius: 999px; font-size: 15px; font-weight: 700;
   background: linear-gradient(135deg, #ff8a00, var(--pink));
   box-shadow: 0 0 18px rgba(255, 46, 136, 0.5);
   animation: starPulse 2.4s ease-in-out infinite;
