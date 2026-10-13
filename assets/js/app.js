@@ -1192,6 +1192,14 @@
     if (box && window.GUIDE_PERSONA) window.GUIDE_PERSONA.mount(box);
   }
 
+  /* ---------- 首屏轮播 ---------- */
+  function mountCarousel() {
+    if (!window.GUIDE_CAROUSEL) return;
+    if (window.GUIDE_CAROUSEL.setOnPickItem) window.GUIDE_CAROUSEL.setOnPickItem(openModal);
+    var el = $("hero-carousel");
+    if (el) window.GUIDE_CAROUSEL.mount(el);
+  }
+
   /* ---------- 启动 ---------- */
   function init() {
     readHash();
@@ -1203,6 +1211,7 @@
     mountLucky();
     mountJobs();
     mountPersona();
+    mountCarousel();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
