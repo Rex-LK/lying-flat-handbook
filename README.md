@@ -7,9 +7,9 @@
 
 零构建、零运行时依赖，clone 下来双击 `index.html` 就能看，也能直接部署到 GitHub Pages。
 
-[![在线体验](https://img.shields.io/badge/在线体验-GitHub%20Pages-00e5ff?style=for-the-badge&logo=github)](https://rex-lk.github.io/lying-flat-handbook/)
+[![在线体验](https://img.shields.io/badge/在线体验-GitHub%20Pages-00e5ff?style=for-the-badge&logo=github)](https://wanfeng-vesper.github.io/lying-flat-handbook/)
 
-🔗 **点这里直接体验 → <https://rex-lk.github.io/lying-flat-handbook/>**
+🔗 **点这里直接体验 → <https://wanfeng-vesper.github.io/lying-flat-handbook/>**
 
 ![preview](preview.png)
 
@@ -46,16 +46,16 @@
 
 ## 🌐 在线体验链接
 
-本仓库远端为 `origin → https://github.com/Rex-LK/lying-flat-handbook.git`，
+本仓库远端为 `origin → https://github.com/wanfeng-vesper/lying-flat-handbook.git`，
 开启 Pages 后，**把它发给任何人，点开就能玩**：
 
-**https://rex-lk.github.io/lying-flat-handbook/**
+**https://wanfeng-vesper.github.io/lying-flat-handbook/**
 
 建议再做一步：打开 GitHub 仓库首页 → 右侧 **About → ⚙️（设置齿轮）** → 勾选
 `Use your GitHub Pages website` 并填入上面这个地址。这样别人在仓库简介里就能直接点进去。
 
 > Pages 还没开启时的临时预览（第三方服务，无需任何设置即可打开）：
-> https://htmlpreview.github.io/?https://github.com/Rex-LK/lying-flat-handbook/blob/main/index.html
+> https://htmlpreview.github.io/?https://github.com/wanfeng-vesper/lying-flat-handbook/blob/main/index.html
 
 ## 🚀 开启 Pages（只需做一次）
 
