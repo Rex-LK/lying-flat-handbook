@@ -2756,6 +2756,139 @@
   }
 
   /* ---------- 注册 ---------- */
+  /* =======================================================
+    X. 手冲咖啡 —— 萃取窗口 + 分段注水
+    ======================================================= */
+  function labCoffee(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var grind = 1, temp = 92, brewing = false, done = false, prog = 0, startT = 0, lastScore = null;
+    var drops = [];
+    function grLabel(g) { return g === 0 ? "细" : g === 1 ? "中" : "粗"; }
+    var gBtns = [
+      btn("研磨·细", "", function () { grind = 0; upd(); }),
+      btn("研磨·中", "", function () { grind = 1; upd(); }),
+      btn("研磨·粗", "", function () { grind = 2; upd(); })
+    ];
+    var tBtns = [
+      btn("88°C", "", function () { temp = 88; upd(); }),
+      btn("92°C", "", function () { temp = 92; upd(); }),
+      btn("96°C", "", function () { temp = 96; upd(); })
+    ];
+    gBtns.forEach(function (b) { center.appendChild(b); });
+    tBtns.forEach(function (b) { center.appendChild(b); });
+    var brewBtn = btn("☕ 开始冲煮", "cyan");
+    center.appendChild(brewBtn);
+
+    function upd() {
+      gBtns.forEach(function (b, i) { b.classList.toggle("active", grind === i); });
+      tBtns.forEach(function (b, i) { b.classList.toggle("active", temp === [88, 92, 96][i]); });
+      brewBtn.disabled = brewing;
+      read.set([
+        { val: grLabel(grind), label: "研磨度", kind: grind === 1 ? "good" : "" },
+        { val: temp + "°C", label: "水温", kind: (temp >= 90 && temp <= 93) ? "good" : "warn" },
+        { val: done && lastScore != null ? Math.round(lastScore) + "分" : "—", label: "风味", kind: done ? (lastScore >= 80 ? "good" : lastScore >= 60 ? "" : "bad") : "" }
+      ]);
+    }
+    function score() {
+      var s = 100;
+      s -= Math.abs(grind - 1) * 22;
+      if (temp < 90) s -= (90 - temp) * 1.6;
+      else if (temp > 93) s -= (temp - 93) * 2.2;
+      return clamp(Math.round(s), 0, 100);
+    }
+    function flavorText(s) {
+      if (s >= 82) return "干净明亮、甜感清晰——中研磨+合适水温，正好打在萃取窗口里。";
+      if (s >= 62) return grind === 2 ? "有点尖酸：研磨偏粗、萃取不足，味道单薄。" : (temp > 93 ? "边缘微苦：水温偏高，下次降两度。" : "还行，但没到最佳窗口。");
+      return grind === 0 ? "过萃发苦：研磨太细/水温太高，把苦涩全逼出来了。" : "萃取严重不足：又粗又凉，像在喝褐色温水。";
+    }
+    brewBtn.addEventListener("click", function () {
+      if (brewing) return;
+      brewing = true; done = false; prog = 0; startT = 0; lastScore = null; drops = []; upd();
+      setCaption(container, "闷蒸 30 秒让咖啡呼吸，再分段绕圈注水——看它一滴一滴落成一杯。");
+    });
+    var lp = loop(function (t) {
+      if (brewing && !startT) startT = t;
+      if (brewing) {
+        var dur = 4200;
+        prog = clamp((t - startT) / dur, 0, 1);
+        if (prog < 0.92 && Math.random() < 0.5) drops.push({ y: 0.30, a: 1, sp: rand(0.01, 0.02) + prog * 0.01 });
+        if (prog >= 1) {
+          brewing = false; done = true; lastScore = score(); upd();
+          setCaption(container, "☕ 冲好了：" + flavorText(lastScore) + "（怎么玩里写了：粉水比 1:15，水温约 90°C）");
+        }
+      }
+      drops.forEach(function (d) { d.y += d.sp; d.a -= 0.015; });
+      drops = drops.filter(function (d) { return d.a > 0 && d.y < 0.96; });
+      draw(prog, brewing, t);
+    });
+    function draw(p, pouring, t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      var cx = w / 2;
+      var dripperTop = h * 0.20, dripperBot = h * 0.46, dwTop = 78, dwBot = 30;
+      var serverTop = h * 0.50, serverBot = h * 0.86, swTop = 64, swBot = 52;
+      if (pouring && p < 0.9) {
+        ctx.strokeStyle = "rgba(180,210,255,0.7)"; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(cx, dripperTop - 26); ctx.lineTo(cx, dripperTop); ctx.stroke();
+      }
+      // 滤杯 V60 锥
+      ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - dwTop, dripperTop); ctx.lineTo(cx + dwTop, dripperTop);
+      ctx.lineTo(cx + dwBot, dripperBot); ctx.lineTo(cx - dwBot, dripperBot); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // 咖啡粉床
+      var bedY = (dripperTop + dripperBot) / 2;
+      var bwt = lerp(dwTop, dwBot, (bedY - dripperTop) / (dripperBot - dripperTop));
+      ctx.fillStyle = "#5b3a1e";
+      ctx.beginPath();
+      ctx.moveTo(cx - bwt, bedY); ctx.lineTo(cx + bwt, bedY);
+      ctx.lineTo(cx + dwBot, dripperBot); ctx.lineTo(cx - dwBot, dripperBot); ctx.closePath(); ctx.fill();
+      // 下落液滴
+      drops.forEach(function (d) {
+        ctx.globalAlpha = clamp(d.a, 0, 1);
+        ctx.fillStyle = "#6b4226";
+        ctx.beginPath(); ctx.arc(cx, d.y * h, 2.4, 0, 6.29); ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      // 下壶
+      ctx.fillStyle = "rgba(255,255,255,0.05)"; ctx.strokeStyle = "rgba(255,255,255,0.25)"; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx - swTop, serverTop); ctx.lineTo(cx + swTop, serverTop);
+      ctx.lineTo(cx + swBot, serverBot); ctx.lineTo(cx - swBot, serverBot); ctx.closePath();
+      ctx.fill(); ctx.stroke();
+      // 壶中咖啡液
+      var liqH = (serverBot - serverTop) * p;
+      if (liqH > 0) {
+        var sy = serverBot - liqH;
+        var swt = lerp(swTop, swBot, (sy - serverTop) / (serverBot - serverTop));
+        var grad = ctx.createLinearGradient(0, sy, 0, serverBot);
+        grad.addColorStop(0, "#7a4a26"); grad.addColorStop(1, "#3d2412");
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.moveTo(cx - swt, sy); ctx.lineTo(cx + swt, sy);
+        ctx.lineTo(cx + swBot, serverBot); ctx.lineTo(cx - swBot, serverBot); ctx.closePath(); ctx.fill();
+      }
+      // 蒸汽
+      if (done && p >= 1) {
+        ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 2;
+        for (var k = 0; k < 3; k++) {
+          var sx = cx + (k - 1) * 16;
+          ctx.beginPath();
+          for (var yy = 0; yy <= 20; yy += 4) {
+            var ox = Math.sin((yy + t * 0.004 + k) * 0.5) * 5;
+            if (yy === 0) ctx.moveTo(sx + ox, serverTop - 6 - yy); else ctx.lineTo(sx + ox, serverTop - 6 - yy);
+          }
+          ctx.stroke();
+        }
+      }
+    }
+    upd();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
   window.GUIDE_LABS = {
     binge: { init: labBinge },
     blindbox: { init: labBlindbox },
@@ -2769,6 +2902,7 @@
     fried: { init: labFried },
     hotpot: { init: labHotpot },
     dessert: { init: labDessert },
+    coffee: { init: labCoffee },
     sport: { init: labSport },
     basketball: { init: labBasketball },
     swimming: { init: labSwim },

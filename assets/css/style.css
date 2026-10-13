@@ -284,6 +284,9 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
 .mylist-btn.is-active { color: #fff; background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 16px rgba(255, 46, 136, 0.45); }
 .mylist-btn.is-active b { color: #fff; }
 
+/* ---------- 实验按钮选中态（咖啡等可调研磨/水温） ---------- */
+.lab-btn.active { background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 14px rgba(255, 46, 136, 0.4); color: #fff; }
+
 /* ---------- 卡片网格 ---------- */
 .cards {
   display: grid; gap: 18px;
