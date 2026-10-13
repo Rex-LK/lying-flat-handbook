@@ -302,6 +302,7 @@
       '<div class="lb-actions">' +
         '<button class="lb-btn lb-again" id="lb-again" type="button">🔁 换一个</button>' +
         '<button class="lb-btn lb-play" id="lb-play" type="button">🧪 打开它的实验</button>' +
+        '<button class="lb-btn lb-poster" id="lb-poster" type="button">🖼️ 今日签</button>' +
         '<span class="lb-count">今日第 <b>' + luckyState.draws + "</b> 抽</span>" +
       "</div>" +
       "</div>";
@@ -360,6 +361,7 @@
       if (t.closest("#lb-open")) { openBox(luckyState.item || dailyItem(), true); return; }
       if (t.closest("#lb-again")) { openBox(nextItem(), true); return; }
       if (t.closest("#lb-play")) { if (luckyState.item) openModal(luckyState.item); return; }
+      if (t.closest("#lb-poster")) { if (luckyState.item && window.GUIDE_PERSONA) window.GUIDE_PERSONA.posterFromItem(luckyState.item); return; }
       var tg = t.closest(".lb-tag");
       if (tg) { toggleTag(tg.getAttribute("data-tag")); scrollToSection("entries"); }
     });
@@ -889,6 +891,13 @@
     }, 60000);
   }
 
+  /* ---------- 摸鱼人格 ---------- */
+  function mountPersona() {
+    if (window.GUIDE_PERSONA && window.GUIDE_PERSONA.setOnPickItem) window.GUIDE_PERSONA.setOnPickItem(openModal);
+    var box = $("persona-box");
+    if (box && window.GUIDE_PERSONA) window.GUIDE_PERSONA.mount(box);
+  }
+
   /* ---------- 启动 ---------- */
   function init() {
     readHash();
@@ -898,6 +907,7 @@
     animateStats();
     mountLucky();
     mountJobs();
+    mountPersona();
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -36,6 +36,7 @@
       <nav class="topnav" id="topnav" aria-label="站内导航">
         <button class="nav-btn is-active" type="button" data-goto="entries">颓废条目</button>
         <button class="nav-btn" type="button" data-goto="lucky">今日盲盒</button>
+        <button class="nav-btn" type="button" data-goto="persona">摸鱼人格</button>
         <button class="nav-btn" type="button" data-goto="jobs">职业爽感<span class="nav-count" id="nav-job-count"></span></button>
       </nav>
       <div class="search-wrap">
@@ -122,6 +123,18 @@
 
       <div class="jobs-rank" id="jobs-rank"></div>
     </section>
+
+    <!-- 摸鱼人格测试 -->
+    <section class="persona" id="persona">
+      <div class="persona-inner">
+        <div class="persona-head">
+          <span class="persona-kicker">🧭 摸鱼人格</span>
+          <h2 class="persona-title">你，是哪种<span class="glow-pink">颓废人格</span>？</h2>
+          <p class="persona-sub">6 道题，看穿你更被哪种「爽点机制」拿捏。测完给你一组推荐，说不定哪天真想在生活中试一个。</p>
+        </div>
+        <div class="persona-box" id="persona-box"></div>
+      </div>
+    </section>
   </main>
 
   <button class="to-top" id="to-top" type="button" aria-label="回到顶部">↑ 顶部</button>
@@ -160,6 +173,7 @@
   <!-- 顺序加载：数据 → 实验 → 应用 -->
   <script defer src="assets/js/data.js"></script>
   <script defer src="assets/js/labs.js"></script>
+  <script defer src="assets/js/persona.js"></script>
   <script defer src="assets/js/app.js"></script>
 </body>
 </html>

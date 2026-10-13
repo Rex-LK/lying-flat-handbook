@@ -728,3 +728,63 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   .lucky-box.is-reveal .lb-flash, .lucky-box.is-reveal .lb-spark { animation: none; }
   html { scroll-behavior: auto; }
 }
+
+/* ---------- 摸鱼人格测试 ---------- */
+.persona { margin: 40px 0 6px; }
+.persona-inner {
+  padding: 28px 26px; border-radius: var(--radius);
+  background: linear-gradient(140deg, rgba(124,77,255,0.14), rgba(0,229,255,0.10) 55%, rgba(255,46,136,0.06));
+  border: 1px solid var(--glass-line); box-shadow: var(--shadow), 0 0 50px rgba(124,77,255,0.12);
+}
+.persona-head { text-align: center; margin-bottom: 22px; }
+.persona-kicker { display: inline-block; font-size: 11px; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; background: rgba(124,77,255,0.16); color: #b9a6ff; font-weight: 600; }
+.persona-title { margin: 10px 0 8px; font-size: 27px; letter-spacing: .5px; }
+.persona-sub { margin: 0 auto; color: var(--text-dim); font-size: 14px; max-width: 560px; }
+.persona-box { max-width: 620px; margin: 0 auto; }
+.pz-card { background: var(--glass); border: 1px solid var(--glass-line); border-radius: var(--radius-sm); padding: 24px 22px; text-align: center; }
+.pz-kicker { display: inline-block; font-size: 11px; letter-spacing: 1px; padding: 3px 10px; border-radius: 999px; background: rgba(0,229,255,0.12); color: var(--cyan); font-weight: 600; }
+.pz-title { margin: 12px 0 8px; font-size: 22px; }
+.pz-sub { margin: 0 0 18px; color: var(--text-dim); font-size: 14px; }
+.pz-start { margin: 4px 0 8px; }
+.pz-note { display: block; margin-top: 12px; font-size: 12px; color: var(--text-dim); }
+.pz-prog { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; margin-bottom: 12px; }
+.pz-prog-bar { display: block; height: 100%; background: linear-gradient(90deg, var(--pink), var(--cyan)); transition: width .3s; }
+.pz-qcount { font-size: 12px; color: var(--cyan); margin-bottom: 6px; }
+.pz-q { margin: 0 0 16px; font-size: 19px; line-height: 1.5; text-align: left; }
+.pz-opts { display: flex; flex-direction: column; gap: 10px; }
+.pz-opt {
+  display: flex; align-items: center; gap: 12px; text-align: left; cursor: pointer; font-family: inherit;
+  padding: 12px 14px; border-radius: var(--radius-sm); color: var(--text); font-size: 14.5px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-line); transition: all .18s;
+}
+.pz-opt:hover { border-color: var(--cyan); background: rgba(0,229,255,0.10); transform: translateX(3px); }
+.pz-opt b { flex: 0 0 26px; height: 26px; line-height: 26px; text-align: center; border-radius: 8px; background: rgba(255,46,136,0.18); color: var(--pink); font-size: 13px; }
+.pz-result .pz-emoji { font-size: 64px; line-height: 1; margin: 6px 0 4px; }
+.pz-tagline { margin: 0 0 12px; color: var(--amber); font-size: 15px; }
+.pz-desc { margin: 0 auto 18px; color: var(--text-dim); font-size: 14px; text-align: left; max-width: 520px; }
+.pz-bars { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; text-align: left; }
+.pz-bar { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-dim); }
+.pz-bar.is-top { color: var(--text); }
+.pz-bar-name { flex: 0 0 130px; }
+.pz-bar-track { flex: 1; height: 8px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+.pz-bar-fill { display: block; height: 100%; background: linear-gradient(90deg, var(--purple), var(--cyan)); }
+.pz-bar.is-top .pz-bar-fill { background: linear-gradient(90deg, var(--pink), var(--amber)); }
+.pz-recs { text-align: left; margin-bottom: 18px; }
+.pz-recs-label { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; }
+.pz-item {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; cursor: pointer; font-family: inherit;
+  padding: 10px 12px; border-radius: var(--radius-sm); color: var(--text);
+  background: rgba(255,255,255,0.04); border: 1px solid var(--glass-line); margin-bottom: 8px; transition: all .18s;
+}
+.pz-item:hover { border-color: var(--pink); background: rgba(255,46,136,0.10); }
+.pz-item-emoji { font-size: 26px; }
+.pz-item-body { flex: 1; display: flex; flex-direction: column; }
+.pz-item-body b { font-size: 14.5px; }
+.pz-item-body small { font-size: 12px; color: var(--text-dim); }
+.pz-item-go { font-size: 12px; color: var(--cyan); }
+.pz-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .persona-inner { padding: 20px 16px; }
+  .pz-card { padding: 20px 16px; }
+  .pz-bar-name { flex-basis: 112px; }
+}
