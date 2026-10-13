@@ -56,8 +56,6 @@
   }
   function makeReadout(container) {
     var box = el("div", "lab-readout");
-    box.style.position = "absolute";
-    box.style.left = "0"; box.style.right = "0"; box.style.bottom = "12px";
     container.appendChild(box);
     return {
       set: function (items) {
