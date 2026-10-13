@@ -1,0 +1,14 @@
+{
+  "name": "人生浪费指南 · 躺平研究所",
+  "short_name": "浪费指南",
+  "description": "用科学拆解好玩与好吃背后的爽点机制，每天抽一个盲盒，玩互动小实验。",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0D14",
+  "theme_color": "#0B0D14",
+  "icons": [
+    { "src": "preview.png", "sizes": "any", "type": "image/png", "purpose": "any" }
+  ]
+}

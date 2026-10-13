@@ -567,7 +567,8 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 }
 .hour-now:hover { color: #fff; border-color: #fff; }
 
-.jobs-grid-wrap { overflow-x: auto; padding-bottom: 6px; }
+.jobs-grid-wrap { overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+.jobs-hint { display: none; text-align: center; font-size: 12px; color: var(--text-dim); margin: 8px 0 2px; letter-spacing: .5px; }
 .jobs-grid { min-width: 860px; border-radius: var(--radius); }
 .jr-row {
   display: grid; grid-template-columns: 196px repeat(24, minmax(0, 1fr));
@@ -680,11 +681,14 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 @media (max-width: 900px) { .cards { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) {
   .cards { grid-template-columns: 1fr; }
-  .topbar-inner { padding: 12px 14px; }
+  .topbar-inner { padding: 10px 14px; gap: 10px; }
+  .topnav { order: 2; flex: 1 1 100%; justify-content: flex-start; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .topnav::-webkit-scrollbar { display: none; }
   .search-wrap { max-width: none; order: 3; flex-basis: 100%; }
   .modal-panel { padding: 22px 18px; }
   .hero { padding: 50px 0 20px; }
   .jobs-grid { min-width: 720px; }
+  .jobs-hint { display: block; }
   .jr-row { grid-template-columns: 132px repeat(24, minmax(0, 1fr)); }
   .hour-range { width: 130px; }
   .jobs-clock { flex: 1 1 100%; }
