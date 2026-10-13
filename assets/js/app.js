@@ -166,16 +166,72 @@
         '<p class="card-hook">' + highlight(item.hook, terms) + "</p>" +
         '<div class="card-tags">' + tagsHtml + "</div>" +
         '<div class="card-dopamine">' + brainMeters(item) + "</div>" +
-        '<span class="card-play">点击运行实验 →</span>';
+        '<div class="card-foot">' +
+          '<span class="card-play">点击运行实验 →</span>' +
+          '<button class="card-like" type="button" data-like="' + item.id + '" aria-label="点赞">' +
+            '<span class="like-ico">🤍</span><span class="like-count">0</span>' +
+          '</button>' +
+        '</div>';
       card.addEventListener("click", function (e) {
         var tg = e.target.closest(".card-tag");
         if (tg) { toggleTag(tg.getAttribute("data-tag")); return; }
+        var lk = e.target.closest(".card-like");
+        if (lk) { onLikeClick(lk, item.id); return; }
         openModal(item);
       });
-      card.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(item); } });
+      card.addEventListener("keydown", function (e) {
+        if (e.target.closest && e.target.closest(".card-like")) return; // 让赞按钮自己处理
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(item); }
+      });
       cardsEl.appendChild(card);
     });
+    hydrateCounts(list);
     resultCountEl.textContent = "共 " + list.length + " 个颓废方式" + (state.q || state.tags.length || state.genres.length || state.cat !== "all" ? "（已筛选）" : "");
+  }
+
+  // 拉取并填充当前卡片的点赞数 + 本机已赞态
+  function hydrateCounts(list) {
+    if (!window.LikeStore || !LikeStore.configured()) return;
+    var ids = list.map(function (it) { return it.id; });
+    LikeStore.hydrate(ids, function (map) {
+      Array.prototype.forEach.call(cardsEl.querySelectorAll(".card-like"), function (btn) {
+        var id = btn.getAttribute("data-like");
+        var c = map[id];
+        if (c != null) btn.querySelector(".like-count").textContent = c;
+        if (LikeStore.hasLiked(id)) {
+          btn.classList.add("liked");
+          btn.querySelector(".like-ico").textContent = "❤️";
+          btn.disabled = true;
+        }
+      });
+    });
+  }
+
+  // 点击点赞：乐观更新 + 本机去重 + 失败回滚
+  function onLikeClick(btn, id) {
+    if (!window.LikeStore) return;
+    if (LikeStore.hasLiked(id)) return;
+    if (!LikeStore.configured()) { window.toast("点赞服务还没配置，让站长填一下 Supabase～"); return; }
+    var countEl = btn.querySelector(".like-count");
+    var icoEl = btn.querySelector(".like-ico");
+    var prev = parseInt(countEl.textContent, 10) || 0;
+    countEl.textContent = prev + 1;
+    icoEl.textContent = "❤️";
+    btn.classList.add("liked");
+    btn.disabled = true;
+    LikeStore._mark(id);
+    LikeStore.like(id, function (newCount) {
+      if (newCount == null) {
+        countEl.textContent = prev;
+        icoEl.textContent = "🤍";
+        btn.classList.remove("liked");
+        btn.disabled = false;
+        LikeStore._unmark(id);
+        window.toast("点赞没发出去，网络抽风了，稍后再试");
+      } else if (typeof newCount === "number") {
+        countEl.textContent = newCount;
+      }
+    });
   }
 
   function render() { renderCards(); renderActiveFilters(); renderJobs(); }

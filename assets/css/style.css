@@ -263,12 +263,22 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
 }
 .card-tag.tag-click { cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
 .card-tag.tag-click:hover { background: rgba(0,234,255,0.18); color: var(--cyan); border-color: rgba(0,234,255,0.4); }
-.card-play {
-  position: absolute; right: 16px; bottom: 14px; font-size: 12px;
-  color: var(--cyan); opacity: 0; transform: translateY(6px);
-  transition: opacity .25s, transform .25s;
+.card-play { font-size: 12px; color: var(--cyan); }
+.card-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; }
+.card-like {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  font-size: 13px; padding: 6px 12px; border-radius: 999px;
+  background: rgba(255,255,255,0.05); border: 1px solid var(--glass-line);
+  color: var(--text-dim);
+  transition: background .15s, color .15s, border-color .15s, transform .12s;
 }
-.card:hover .card-play { opacity: 1; transform: translateY(0); }
+.card-like:hover { border-color: rgba(255,46,136,0.5); color: var(--pink); }
+.card-like:active { transform: scale(.94); }
+.card-like .like-ico { font-size: 14px; line-height: 1; }
+.card-like.liked {
+  background: rgba(255,46,136,0.14); border-color: rgba(255,46,136,0.5);
+  color: var(--pink); cursor: default;
+}
 
 /* 多巴胺指数 */
 .card-dopamine { margin: 4px 0 6px; }
