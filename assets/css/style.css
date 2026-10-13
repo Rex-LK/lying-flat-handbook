@@ -225,6 +225,65 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
 }
 .modal-genre { margin-bottom: 8px; }
 
+/* ---------- 卡片：成本 / 门槛 徽章 ---------- */
+.card-meta {
+  display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 999px;
+  margin-bottom: 12px; margin-left: 8px; font-weight: 600;
+  background: rgba(255, 255, 255, 0.06); color: var(--text-dim);
+}
+.card-cost.c0, .card-level.l0 { background: rgba(0, 229, 160, 0.14); color: var(--green); }
+.card-cost.c1, .card-level.l1 { background: rgba(255, 176, 32, 0.14); color: var(--amber); }
+.card-cost.c2 { background: rgba(0, 229, 255, 0.12); color: var(--cyan); }
+.card-level.l2 { background: rgba(124, 77, 255, 0.16); color: var(--purple); }
+
+/* ---------- 弹窗：元信息 ---------- */
+.modal-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 18px; }
+.modal-meta .mm {
+  font-size: 12px; padding: 3px 10px; border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05); color: var(--text-dim); font-weight: 600;
+}
+.modal-meta .mm.c0, .modal-meta .mm.l0 { color: var(--green); background: rgba(0, 229, 160, 0.12); }
+.modal-meta .mm.c1, .modal-meta .mm.l1 { color: var(--amber); background: rgba(255, 176, 32, 0.12); }
+.modal-meta .mm.c2 { color: var(--cyan); background: rgba(0, 229, 255, 0.10); }
+.modal-meta .mm.l2 { color: var(--purple); background: rgba(124, 77, 255, 0.14); }
+
+/* ---------- 弹窗：怎么玩 ---------- */
+.how {
+  margin-top: 6px; background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--glass-line); border-radius: var(--radius-sm); padding: 16px 18px;
+}
+.how-head { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.how-aud { font-size: 12px; font-weight: 600; color: var(--cyan); background: rgba(0, 229, 255, 0.10); padding: 2px 9px; border-radius: 999px; }
+.how-need { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; }
+.how-need span { display: inline-block; margin: 0 4px 4px 0; padding: 2px 9px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); color: var(--text); font-size: 12px; }
+.how-steps { list-style: none; counter-reset: step; margin: 0 0 12px; padding: 0; }
+.how-step { counter-increment: step; display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; transition: background .2s; }
+.how-step:hover { background: rgba(255, 255, 255, 0.04); }
+.how-step::before {
+  content: counter(step); flex: 0 0 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff;
+  background: linear-gradient(135deg, var(--pink), var(--purple));
+}
+.how-step label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; flex: 1; }
+.how-step input { margin-top: 3px; accent-color: var(--green); }
+.how-step span { font-size: 14px; line-height: 1.6; }
+.how-step.done span { text-decoration: line-through; color: var(--text-dim); }
+.how-tip { font-size: 13px; color: var(--amber); background: rgba(255, 176, 32, 0.08); border-left: 3px solid var(--amber); padding: 8px 12px; border-radius: 8px; }
+.save-todo {
+  margin-top: 14px; width: 100%; border: none; cursor: pointer; padding: 11px 16px;
+  border-radius: 999px; font-size: 14px; font-weight: 700; color: #fff;
+  background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-line);
+  transition: background .2s, box-shadow .2s;
+}
+.save-todo:hover { background: rgba(255, 46, 136, 0.18); }
+.save-todo.on { background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 16px rgba(255, 46, 136, 0.4); }
+
+/* ---------- 控制区：我的清单按钮 ---------- */
+.mylist-btn { border: 1px solid var(--glass-line); }
+.mylist-btn b { color: var(--cyan); margin-left: 2px; }
+.mylist-btn.is-active { color: #fff; background: linear-gradient(135deg, var(--pink), var(--purple)); box-shadow: 0 0 16px rgba(255, 46, 136, 0.45); }
+.mylist-btn.is-active b { color: #fff; }
+
 /* ---------- 卡片网格 ---------- */
 .cards {
   display: grid; gap: 18px;

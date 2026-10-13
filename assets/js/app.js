@@ -45,6 +45,39 @@
   function audOf(item) { return (window.GUIDE_AUDIENCE && window.GUIDE_AUDIENCE[item.id]) || "both"; }
   function durOf(item) { return (window.GUIDE_DURATION && window.GUIDE_DURATION[item.id]) || 60; }
   function fmtDur(m) { return m >= 60 ? (Math.round(m / 6) / 10) + " 小时" : m + " 分钟"; }
+  // 成本 / 门槛维度
+  function costOf(item) { return (window.GUIDE_COST && window.GUIDE_COST[item.id]); }
+  function levelOf(item) { return (window.GUIDE_LEVEL && window.GUIDE_LEVEL[item.id]); }
+  function howOf(item) { return (window.GUIDE_HOW && window.GUIDE_HOW[item.id]) || null; }
+  var COST_META = { 0: { i: "💰", t: "免费" }, 1: { i: "💰", t: "小钱" }, 2: { i: "🛒", t: "需准备" } };
+  var LEVEL_META = { 0: { i: "🎯", t: "新手友好" }, 1: { i: "🎯", t: "要上手" }, 2: { i: "🏆", t: "需钻研" } };
+  // 我的待玩清单（localStorage）
+  function getMylist() { try { return JSON.parse(localStorage.getItem("lfh_mylist") || "[]") || []; } catch (e) { return []; } }
+  function inMylist(id) { return getMylist().indexOf(id) >= 0; }
+  function toggleMylist(id) {
+    var l = getMylist(), i = l.indexOf(id);
+    if (i >= 0) l.splice(i, 1); else l.push(id);
+    try { localStorage.setItem("lfh_mylist", JSON.stringify(l)); } catch (e) {}
+  }
+  function updateMylistCount() {
+    var el = $("mylist-count"); if (el) el.textContent = getMylist().length;
+    var btn = $("mylist-btn"); if (btn) btn.classList.toggle("is-active", state.mylist);
+  }
+  function getHowDone(id) { try { return JSON.parse(localStorage.getItem("lfh_how_" + id) || "[]") || []; } catch (e) { return []; } }
+  function saveHowDone(id, box) {
+    var idx = [];
+    Array.prototype.forEach.call(box.querySelectorAll(".how-step input"), function (cb) {
+      if (cb.checked) idx.push(parseInt(cb.closest(".how-step").getAttribute("data-i"), 10));
+    });
+    try { localStorage.setItem("lfh_how_" + id, JSON.stringify(idx)); } catch (e) {}
+  }
+  // 卡片上的成本/门槛小徽章
+  function metaBadges(item) {
+    var c = costOf(item), l = levelOf(item), h = "";
+    if (c != null) h += '<span class="card-meta card-cost c' + c + '">' + COST_META[c].i + " " + COST_META[c].t + "</span>";
+    if (l != null) h += '<span class="card-meta card-level l' + l + '">' + LEVEL_META[l].i + " " + LEVEL_META[l].t + "</span>";
+    return h;
+  }
   // 按受众重排：上班族优先短耗时、无聊族优先长耗时
   function sortByAudience(list) {
     if (state.aud === "busy") list.sort(function (a, b) { return durOf(a) - durOf(b); });
@@ -70,7 +103,7 @@
   var toTopEl = $("to-top");
 
   /* ---------- 状态 ---------- */
-  var state = { q: "", tags: [], cat: "all", genres: [], aud: "all" };
+  var state = { q: "", tags: [], cat: "all", genres: [], aud: "all", mylist: false };
   var activeLab = null; // 当前挂载的实验 {destroy}
 
   /* ---------- 工具 ---------- */
@@ -108,6 +141,7 @@
       if (state.aud !== "all") { var a = audOf(item); if (a !== state.aud && a !== "both") return false; }
       if (state.genres.length && state.genres.indexOf(genreOf(item)) < 0) return false;
       if (state.tags.length && !state.tags.every(function (t) { return item.tags.indexOf(t) >= 0; })) return false;
+      if (state.mylist && !inMylist(item.id)) return false;
       if (!matchItem(item, state.q)) return false;
       return true;
     });
@@ -177,6 +211,7 @@
         '<span class="card-cat ' + item.cat + '">' + CAT_LABEL[item.cat] + "</span>" +
         '<span class="card-genre">' + escapeHtml(genreOf(item)) + "</span>" +
         '<span class="card-time">⏱ 约 ' + fmtDur(durOf(item)) + "</span>" +
+        metaBadges(item) +
         '<h3 class="card-name">' + highlight(item.name, terms) + "</h3>" +
         '<p class="card-hook">' + highlight(item.hook, terms) + "</p>" +
         '<div class="card-tags">' + tagsHtml + "</div>" +
@@ -201,7 +236,8 @@
       cardsEl.appendChild(card);
     });
     hydrateCounts(list);
-    resultCountEl.textContent = "共 " + list.length + " 个颓废方式" + (state.q || state.tags.length || state.genres.length || state.cat !== "all" || state.aud !== "all" ? "（已筛选）" : "");
+    var filtered = state.q || state.tags.length || state.genres.length || state.cat !== "all" || state.aud !== "all" || state.mylist;
+    resultCountEl.textContent = "共 " + list.length + " 个玩法" + (filtered ? (state.mylist ? "（我的清单）" : "（已筛选）") : "");
   }
 
   // 拉取并填充当前卡片的点赞数 + 本机已赞态
@@ -881,6 +917,10 @@
       s.textContent = "#" + t;
       tagsBox.appendChild(s);
     });
+    // 成本 / 门槛 / 耗时 元信息
+    renderModalMeta(item);
+    // 「怎么玩」教学清单（含受众专属路径）
+    renderHow(item);
     // 多巴胺指数
     $("modal-dopamine").innerHTML = brainMeters(item);
     // 先显示弹层，再挂载实验（否则 lab-stage 处于 display:none，canvas 量到 0×0）
@@ -908,6 +948,74 @@
     activeLab = null;
     var stage = $("lab-stage");
     if (stage) stage.innerHTML = "";
+  }
+
+  // 弹窗元信息：耗时 / 成本 / 门槛 / 受众
+  function renderModalMeta(item) {
+    var el = $("modal-meta"); if (!el) return;
+    var c = costOf(item), l = levelOf(item), a = audOf(item);
+    var parts = ['<span class="mm">⏱ 约 ' + fmtDur(durOf(item)) + "</span>"];
+    if (c != null) parts.push('<span class="mm c' + c + '">' + COST_META[c].i + " " + COST_META[c].t + "</span>");
+    if (l != null) parts.push('<span class="mm l' + l + '">' + LEVEL_META[l].i + " " + LEVEL_META[l].t + "</span>");
+    if (a !== "both") parts.push('<span class="mm">👤 ' + AUD_LABEL[a] + "</span>");
+    el.innerHTML = parts.join("");
+  }
+
+  // 「怎么玩」教学清单：根据当前受众选择步骤，并支持勾选与本地保存
+  function renderHow(item) {
+    var box = $("modal-how"); if (!box) return;
+    var h = howOf(item);
+    if (!h) { box.hidden = true; return; }
+    box.hidden = false;
+    var aud = state.aud;
+    var steps = (aud === "busy" && h.busy) ? h.busy
+      : (aud === "bored" && h.bored) ? h.bored
+      : h.steps;
+    var audNote = (aud === "busy" && h.busy) ? "为你：忙里偷闲党精简版"
+      : (aud === "bored" && h.bored) ? "为你：闲得发慌党沉浸版"
+      : "";
+    var need = h.need || [];
+    var saved = getHowDone(item.id);
+    var stepsHtml = (steps || []).map(function (s, i) {
+      var on = saved.indexOf(i) >= 0;
+      return '<li class="how-step' + (on ? " done" : "") + '" data-i="' + i + '">' +
+        '<label><input type="checkbox"' + (on ? " checked" : "") + "><span>" + escapeHtml(s) + "</span></label></li>";
+    }).join("");
+    var needHtml = need.length
+      ? '<div class="how-need">准备：' + need.map(function (n) { return "<span>" + escapeHtml(n) + "</span>"; }).join("") + "</div>"
+      : "";
+    var tip = (aud === "busy" && h.busyTip) ? h.busyTip
+      : (aud === "bored" && h.boredTip) ? h.boredTip
+      : h.tip;
+    box.innerHTML =
+      '<div class="how-head">📋 怎么玩' + (audNote ? ' <span class="how-aud">' + escapeHtml(audNote) + "</span>" : "") + "</div>" +
+      needHtml +
+      '<ol class="how-steps">' + stepsHtml + "</ol>" +
+      (tip ? '<div class="how-tip">💡 ' + escapeHtml(tip) + "</div>" : "") +
+      '<button class="save-todo" id="save-todo" type="button"></button>';
+    Array.prototype.forEach.call(box.querySelectorAll(".how-step input"), function (cb) {
+      cb.addEventListener("change", function () {
+        cb.closest(".how-step").classList.toggle("done", cb.checked);
+        saveHowDone(item.id, box);
+      });
+    });
+    wireSaveTodo(item);
+  }
+
+  // 我的待玩清单：弹窗内的加入/移除按钮
+  function wireSaveTodo(item) {
+    var btn = $("save-todo"); if (!btn) return;
+    function paint() {
+      if (inMylist(item.id)) { btn.classList.add("on"); btn.textContent = "✅ 已在我的待玩清单"; }
+      else { btn.classList.remove("on"); btn.textContent = "📌 加入我的待玩清单"; }
+    }
+    paint();
+    btn.onclick = function () {
+      toggleMylist(item.id);
+      paint();
+      updateMylistCount();
+      window.toast(inMylist(item.id) ? "已加入你的待玩清单 📌" : "已从清单移除");
+    };
   }
 
   modalEl.addEventListener("click", function (e) {
@@ -952,14 +1060,24 @@
     render();
   });
 
+  /* ---------- 我的待玩清单 ---------- */
+  var mylistBtnEl = $("mylist-btn");
+  if (mylistBtnEl) mylistBtnEl.addEventListener("click", function () {
+    state.mylist = !state.mylist;
+    updateMylistCount();
+    syncHash();
+    render();
+  });
+
   // 筛选状态条：点单项移除，点「清除全部」重置
   activeFiltersEl.addEventListener("click", function (e) {
     if (e.target.closest("#af-clear")) {
       state.q = ""; searchEl.value = ""; searchClearEl.hidden = true;
-      state.cat = "all"; state.tags = []; state.genres = []; state.aud = "all";
+      state.cat = "all"; state.tags = []; state.genres = []; state.aud = "all"; state.mylist = false;
       syncHash();
       Array.prototype.forEach.call(catSwitchEl.children, function (b) { b.classList.toggle("is-active", b.getAttribute("data-cat") === "all"); });
       Array.prototype.forEach.call(audSwitchEl.children, function (b) { b.classList.toggle("is-active", b.getAttribute("data-aud") === "all"); });
+      updateMylistCount();
       renderTagCloud(); renderGenreBar(); render();
       return;
     }
@@ -1078,6 +1196,7 @@
     renderTagCloud();
     renderGenreBar();
     render();
+    updateMylistCount();
     animateStats();
     mountLucky();
     mountJobs();
