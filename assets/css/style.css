@@ -629,11 +629,19 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   flex: 0 1 320px; padding: 16px 20px; border-radius: var(--radius);
   background: linear-gradient(140deg, rgba(124,77,255,0.14), rgba(0,229,255,0.08));
   border: 1px solid var(--glass-line); display: flex; flex-direction: column; gap: 4px;
+  cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s;
 }
+.jobs-clock:hover { border-color: rgba(0,229,255,0.5); box-shadow: 0 0 24px rgba(0,229,255,0.22); transform: translateY(-2px); }
+.jobs-clock:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
 .clock-label { font-size: 12px; color: var(--text-dim); }
 .clock-label b { color: var(--cyan); font-size: 14px; }
 .clock-job { font-size: 20px; font-weight: 800; }
 .clock-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.6; }
+.clock-go {
+  margin-top: 6px; font-size: 12px; color: var(--cyan); font-weight: 600;
+  transition: transform .2s;
+}
+.jobs-clock:hover .clock-go { transform: translateX(4px); }
 
 .jobs-toolbar {
   display: flex; gap: 16px; align-items: center; justify-content: space-between;

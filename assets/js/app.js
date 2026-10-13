@@ -540,6 +540,7 @@
   var hourRangeEl = $("hour-range");
   var hourLabelEl = $("hour-label");
   var hourNowEl = $("hour-now");
+  var jobsClockEl = $("jobs-clock");
   var clockNowEl = $("clock-now");
   var clockJobEl = $("clock-job");
   var clockDescEl = $("clock-desc");
@@ -823,6 +824,18 @@
     }
     if (hourNowEl) {
       hourNowEl.addEventListener("click", function () { jobState.touched = false; selectHour(nowHour()); });
+    }
+    // 点顶部「此刻最爽」卡片：跳到职业区并定位到此刻那一列
+    if (jobsClockEl) {
+      var gotoClock = function () {
+        jobState.touched = false;
+        selectHour(nowHour());
+        scrollToSection("jobs");
+      };
+      jobsClockEl.addEventListener("click", gotoClock);
+      jobsClockEl.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); gotoClock(); }
+      });
     }
   }
 
