@@ -406,6 +406,38 @@ window.GUIDE_ITEMS = [
     why: "拼豆卖的是「心流」：把彩色小珠按图摆好，是低门槛、高反馈的手作——每放一颗都有「位置对了」的即时确认，大脑被稳定的多巴胺小脉冲喂养，容易滑入忘我。最后那下熨斗把零散珠子融成定型的画，完成感（内啡肽）瞬间兑现。于是你花一下午，换一张冰箱贴，和一句「又浪费了一天」的自嘲。",
     tags: ["多巴胺", "心流", "感官奖赏", "时间黑洞", "完成感"],
     lab: "perler"
+  },
+
+  /* ---------------- 场景卡（通勤 / 午休 / 周末） ---------------- */
+  {
+    id: "podcast",
+    cat: "fun",
+    name: "通勤听播客",
+    emoji: "🎧",
+    hook: "地铁摇晃的 40 分钟，是只属于你的私人电台。",
+    why: "通勤本是被位移「偷走」的死时间，戴上耳机切到喜欢的播客，大脑把被动通勤重新赋值为「主动获取」——你用听觉接管了这段省不下来的时间，掌控感回来了。主播的声音提供低频社交陪伴（催产素），而「又学到点什么 / 笑了一下」的微小确定性，让多巴胺在拥堵里稳稳到账。于是你甚至开始期待那班地铁。",
+    tags: ["掌控感", "社交陪伴", "多巴胺", "碎片时间"],
+    lab: "podcast"
+  },
+  {
+    id: "craft",
+    cat: "fun",
+    name: "午休小手工",
+    emoji: "✂️",
+    hook: "别人刷手机，你用 15 分钟折出一只能拍照的星星。",
+    why: "午休是大脑从专注切回「默认模式网络」的黄金修复期。比起继续盯屏（仍在消耗注意力），做点低门槛、有成品的手工，让手脑进入轻量心流：每一次折叠都是毫秒级反馈，多巴胺小额连发；而「下班前桌上多了个自己做的东西」带来真实的掌控感与内啡肽的踏实。屏幕之外的世界，原来 15 分钟就够回血。",
+    tags: ["心流", "掌控感", "内啡肽", "碎片时间"],
+    lab: "craft"
+  },
+  {
+    id: "homecook",
+    cat: "food",
+    name: "周末做一顿饭",
+    emoji: "🍳",
+    hook: "不为了省外卖钱，就为听油下锅那一声响。",
+    why: "工作日吃饭是「填饱」，周末做饭是「重连」。切菜节奏、火候判断、味道调试，是一条完整操作链，极易打成心流；当一道菜从生到熟、从你手里端上桌，掌控感被具象成盘里的颜色与香气（感官奖赏）。花时间照料自己这件事本身就在分泌内啡肽——你用一下午，把「被生活推着走」扳成了「我在过生活」。",
+    tags: ["心流", "感官奖赏", "内啡肽", "沉浸"],
+    lab: "homecook"
   }
 ];
 
@@ -464,7 +496,10 @@ window.GUIDE_DOPAMINE = {
   mahjong: 86,
   cards: 82,
   perler: 60,
-  hiking: 75
+  hiking: 75,
+  podcast: 70,
+  craft: 68,
+  homecook: 75
 };
 
 /* 内啡肽指数（0-100）：分泌内啡肽的强度，越高越「爽/痛后快感」
@@ -513,7 +548,10 @@ window.GUIDE_ENDORPHIN = {
   mahjong: 36,
   cards: 34,
   perler: 55,
-  hiking: 86
+  hiking: 86,
+  podcast: 35,
+  craft: 55,
+  homecook: 80
 };
 
 /* 类别分类（美食 / 宠物 / 电竞 / 娱乐 / 潮玩 / 职场 / 运动）
@@ -562,7 +600,10 @@ window.GUIDE_GENRES = {
   mahjong: "桌游",
   cards: "桌游",
   perler: "潮玩",
-  hiking: "运动"
+  hiking: "运动",
+  podcast: "娱乐",
+  craft: "潮玩",
+  homecook: "美食"
 };
 
 /* =========================================================
@@ -583,7 +624,8 @@ window.GUIDE_AUDIENCE = {
   cards: "bored", perler: "bored", hiking: "bored",
   /* 通用：两类人都能做 */
   cat: "both", sport: "both", basketball: "both", swimming: "both", cycling: "both",
-  gym: "both", badminton: "both", yoga: "both", hamster: "both", rabbit: "both"
+  gym: "both", badminton: "both", yoga: "both", hamster: "both", rabbit: "both",
+  podcast: "busy", craft: "busy", homecook: "both"
 };
 
 window.GUIDE_DURATION = {
@@ -593,7 +635,8 @@ window.GUIDE_DURATION = {
   yoga: 45, dog: 25, aquarium: 40, hamster: 20, parrot: 30, rabbit: 20, gecko: 30,
   pacmanfrog: 20, cornsnake: 25, sugarglider: 30, hedgehog: 20, tarantula: 20,
   hermitcrab: 25, axolotl: 30, werewolf: 90, jubensha: 180, mahjong: 150,
-  cards: 60, perler: 60, hiking: 180
+  cards: 60, perler: 60, hiking: 180,
+  podcast: 40, craft: 15, homecook: 120
 };
 
 /* =========================================================

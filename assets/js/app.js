@@ -41,7 +41,7 @@
   })();
 
   // 受众 / 耗时维度（与 GUIDE_ITEMS 通过 id 关联）
-  var AUD_LABEL = { busy: "高速上班族", bored: "无聊族", both: "通用" };
+  var AUD_LABEL = { busy: "忙里偷闲党", bored: "闲得发慌党", both: "通用" };
   function audOf(item) { return (window.GUIDE_AUDIENCE && window.GUIDE_AUDIENCE[item.id]) || "both"; }
   function durOf(item) { return (window.GUIDE_DURATION && window.GUIDE_DURATION[item.id]) || 60; }
   function fmtDur(m) { return m >= 60 ? (Math.round(m / 6) / 10) + " 小时" : m + " 分钟"; }
