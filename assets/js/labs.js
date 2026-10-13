@@ -2889,6 +2889,258 @@
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
   }
 
+  /* =======================================================
+     补充实验：让全部条目都有互动小实验
+     ======================================================= */
+
+  // —— 通勤听播客：随机抽一期 + 动态均衡器 ——
+  function labPodcast(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var topics = ["深度长访谈", "相声 / 脱口秀", "悬疑故事会", "冷知识科普", "职场吐槽局", "播客剧", "历史八卦", "放松白噪音", "创投闲聊", "影评唠嗑"];
+    var pick = null;
+    var b = btn("🎲 抽一期", "cyan");
+    center.appendChild(b);
+    b.addEventListener("click", function () {
+      pick = topics[Math.floor(Math.random() * topics.length)];
+      var dur = 18 + Math.floor(Math.random() * 55);
+      read.set([
+        { val: pick, label: "本期主题" },
+        { val: dur + " 分钟", label: "单集时长", kind: "warn" }
+      ]);
+      setCaption(container, "戴上耳机，把被动通勤重新赋值为「主动获取」——低频社交陪伴 + 微小确定性，多巴胺稳稳到账。");
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "rgba(124,77,255,0.05)"; ctx.fillRect(0, 0, w, h);
+      var n = 28, bw = w / n;
+      for (var i = 0; i < n; i++) {
+        var amp = (pick ? 0.5 + 0.5 * Math.sin(t / 120 + i * 0.5) : 0.12) * (0.4 + 0.6 * Math.abs(Math.sin(i * 1.3)));
+        var bh = amp * h * 0.6;
+        var x = i * bw + bw * 0.2, y = (h - bh) / 2;
+        ctx.fillStyle = pick ? "rgba(0,229,255,0.85)" : "rgba(255,255,255,0.18)";
+        roundRect(ctx, x, y, bw * 0.6, bh, 3); ctx.fill();
+      }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  // —— 周末做一顿饭：开火下锅，气泡渐满 ——
+  function labHomecook(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var dishes = ["番茄牛腩", "葱油拌面", "可乐鸡翅", "咖喱鸡", "蒜蓉西兰花", "煎三文鱼", "麻婆豆腐", "罗宋汤"];
+    var heating = false, prog = 0, startT = 0, bubbles = [];
+    function upd() { read.set([{ val: Math.round(prog * 100) + "%", label: "火候", kind: prog > 0.85 ? "good" : "warn" }]); }
+    upd();
+    var b = btn("🍳 开火下锅", "amber");
+    center.appendChild(b);
+    b.addEventListener("click", function () {
+      heating = !heating;
+      b.textContent = heating ? "🔥 关火" : "🍳 开火下锅";
+      if (heating && prog >= 1) { prog = 0; bubbles = []; }
+      startT = 0;
+      setCaption(container, heating ? "油热了，下食材——听那一声响，心流与感官奖赏双双在线。" : "关火，盛盘。");
+    });
+    var lp = loop(function (t) {
+      if (heating && !startT) startT = t;
+      if (heating) {
+        prog = clamp((t - startT) / 4200, 0, 1);
+        if (prog < 0.96 && Math.random() < 0.4) bubbles.push({ x: rand(0.3, 0.7), y: 0.9, vy: rand(0.01, 0.03) });
+        if (prog >= 1) {
+          heating = false; b.textContent = "🍳 开火下锅";
+          var d = dishes[Math.floor(Math.random() * dishes.length)];
+          setCaption(container, "出锅！今天你亲手做了一道「" + d + "」——花时间照料自己，内啡肽到账。");
+        }
+        upd();
+      }
+      bubbles.forEach(function (p) { p.y -= p.vy; });
+      bubbles = bubbles.filter(function (p) { return p.y > 0.45; });
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      var cx = w / 2, py = h * 0.5, r = Math.min(w, h) * 0.28;
+      ctx.fillStyle = "rgba(255,255,255,0.06)"; ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, py, r, 0, 6.2832); ctx.fill(); ctx.stroke();
+      var liq = r * 0.92 * prog;
+      if (liq > 0) {
+        var g = ctx.createRadialGradient(cx, py, 4, cx, py, liq);
+        g.addColorStop(0, "#ff9a3c"); g.addColorStop(1, "#c0451b");
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, py, liq, 0, 6.2832); ctx.fill();
+      }
+      ctx.fillStyle = "rgba(255,240,200,0.85)";
+      bubbles.forEach(function (p) { ctx.beginPath(); ctx.arc(cx + (p.x - 0.5) * r * 1.6, py + (p.y - 0.5) * r * 1.6, 2.4, 0, 6.2832); ctx.fill(); });
+      if (heating) {
+        ctx.fillStyle = "rgba(255,77,109," + (0.12 + 0.1 * Math.sin(t / 90)) + ")";
+        ctx.beginPath(); ctx.arc(cx, py + r + 6, r * 0.7, 0, 6.2832); ctx.fill();
+      }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  // —— 冥想呼吸：跟随圆圈吸气 / 呼气 ——
+  function labMeditation(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var running = false, t0 = 0, rounds = 0, phase = "准备";
+    var b = btn("▶ 开始呼吸", "cyan");
+    center.appendChild(b);
+    b.addEventListener("click", function () {
+      running = !running;
+      b.textContent = running ? "⏸ 暂停" : "▶ 开始呼吸";
+      setCaption(container, running ? "跟着圆圈：放大=吸气，缩小=呼气。专注呼吸，皮质醇在降。" : "停。把这份松弛带回日常。");
+    });
+    var lp = loop(function (t) {
+      if (running && !t0) t0 = t;
+      var tt = running ? (t - t0) : 0;
+      var cyc = 6000;
+      var k = (tt % cyc) / cyc;
+      var breathe = 0.5 - 0.5 * Math.cos(k * 6.2832);
+      phase = k < 0.5 ? "吸气" : "呼气";
+      if (running && k < 0.02) rounds++;
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      ctx.clearRect(0, 0, w, h);
+      var cx = w / 2, cyy = h / 2, base = Math.min(w, h) * 0.16;
+      var rad = base + breathe * Math.min(w, h) * 0.22;
+      var g = ctx.createRadialGradient(cx, cyy, 6, cx, cyy, rad);
+      g.addColorStop(0, "rgba(0,229,255,0.55)"); g.addColorStop(1, "rgba(124,77,255,0.12)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cyy, rad, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.font = "600 " + Math.round(Math.min(w, h) * 0.07) + "px sans-serif";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(phase, cx, cyy);
+      read.set([
+        { val: phase, label: "当前", kind: phase === "吸气" ? "cyan" : "" },
+        { val: rounds + " 轮", label: "已完成", kind: "good" }
+      ]);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  // —— 折纸类通用：点一下折一步，最后成型 ——
+  function foldToy(container, steps, finalEmoji, doneCaption) {
+    var center = makeCenter(container);
+    var cap = el("div");
+    cap.style.textAlign = "center";
+    container.appendChild(cap);
+    var emo = el("div");
+    emo.textContent = "📄";
+    emo.style.fontSize = "64px";
+    emo.style.transition = "transform .35s ease, opacity .35s ease";
+    cap.appendChild(emo);
+    var tip = el("div");
+    tip.style.color = "var(--text-dim)";
+    tip.style.marginTop = "10px";
+    tip.style.fontSize = "14px";
+    cap.appendChild(tip);
+    var stage = 0, done = false;
+    function render() {
+      if (done) {
+        emo.textContent = finalEmoji;
+        emo.style.transform = "scale(1.15) rotate(6deg)";
+        tip.textContent = doneCaption;
+        return;
+      }
+      tip.textContent = (stage + 1) + " / " + steps.length + " · " + steps[stage];
+    }
+    render();
+    var b = btn("✂️ 折一下", "amber");
+    center.appendChild(b);
+    var again = btn("🔁 重新来", "");
+    center.appendChild(again);
+    b.addEventListener("click", function () {
+      if (done) return;
+      stage++;
+      emo.style.transform = "scale(0.9) rotate(" + (stage * 24) + "deg)";
+      setTimeout(function () { emo.style.transform = "scale(1)"; }, 180);
+      if (stage >= steps.length) { done = true; setCaption(container, doneCaption); }
+      else setCaption(container, steps[stage - 1] + "——每折一下都是毫秒级反馈，多巴胺小额连发。");
+      render();
+    });
+    again.addEventListener("click", function () {
+      stage = 0; done = false; emo.style.transform = "scale(1)"; render();
+      setCaption(container, "从头折，慢就是快。");
+    });
+    return { destroy: function () {} };
+  }
+  function labCraft(container) {
+    return foldToy(container,
+      ["对折出中线", "两角向中心折", "翻面再折一次", "撑开压成方块", "拉出星星的角"],
+      "⭐", "15 分钟，桌上多了个你自己折的星星——碎片时间最干净的「做点什么」。");
+  }
+  function labOrigami(container) {
+    return foldToy(container,
+      ["对角折出十字", "四角向中心聚", "翻面收成底座", "拉起头部与翅膀", "捏出尖尖的喙"],
+      "🕊️", "一只纸鹤落进手心——低门槛心流，把掌控感折进了立体。");
+  }
+
+  // —— 拼一幅图：3x3 滑动拼图（保证可解） ——
+  function labJigsaw(container) {
+    var center = makeCenter(container);
+    var cap = el("div");
+    cap.style.textAlign = "center";
+    container.appendChild(cap);
+    var grid = el("div");
+    grid.style.display = "grid";
+    grid.style.gridTemplateColumns = "repeat(3, 54px)";
+    grid.style.gap = "6px";
+    grid.style.justifyContent = "center";
+    grid.style.margin = "8px auto 0";
+    cap.appendChild(grid);
+    var state = [];
+    function blankIdx() { return state.indexOf(0); }
+    function isSolved() { for (var i = 0; i < 8; i++) if (state[i] !== i + 1) return false; return true; }
+    function shuffle() {
+      state = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+      var b = 8;
+      for (var n = 0; n < 80; n++) {
+        var nei = [];
+        if (b % 3 > 0) nei.push(b - 1);
+        if (b % 3 < 2) nei.push(b + 1);
+        if (b >= 3) nei.push(b - 3);
+        if (b < 6) nei.push(b + 3);
+        var pk = nei[Math.floor(Math.random() * nei.length)];
+        var tmp = state[b]; state[b] = state[pk]; state[pk] = tmp; b = pk;
+      }
+    }
+    function render() {
+      grid.innerHTML = "";
+      state.forEach(function (v, i) {
+        var cell = el("button", "lab-cell");
+        cell.type = "button";
+        cell.textContent = v === 0 ? "" : v;
+        cell.style.width = "54px"; cell.style.height = "54px";
+        cell.style.borderRadius = "10px"; cell.style.border = "1px solid var(--glass-line)";
+        cell.style.fontSize = "20px"; cell.style.fontWeight = "700";
+        if (v === 0) { cell.style.background = "transparent"; cell.style.cursor = "default"; }
+        else { cell.style.background = "rgba(124,77,255,0.18)"; cell.style.color = "#fff"; cell.style.cursor = "pointer"; }
+        cell.addEventListener("click", function () { move(i); });
+        grid.appendChild(cell);
+      });
+    }
+    function move(i) {
+      var b = blankIdx();
+      if (i === b) return;
+      var adj = (i % 3 === b % 3 && Math.abs(i - b) === 3) || (Math.floor(i / 3) === Math.floor(b / 3) && Math.abs(i - b) === 1);
+      if (!adj) return;
+      var tmp = state[i]; state[i] = state[b]; state[b] = tmp;
+      if (isSolved()) setCaption(container, "拼好了！⛰️ 一千块碎片回到它本来的样子，延迟满足变成可见的奖赏。");
+      else setCaption(container, "每一块归位，都是一次小而确定的「对了」。");
+      render();
+    }
+    var again = btn("🔀 打乱重拼", "");
+    center.appendChild(again);
+    again.addEventListener("click", function () { shuffle(); render(); setCaption(container, "已打乱，点数字块挪到空格，拼回 1–8。"); });
+    shuffle(); render();
+    setCaption(container, "点数字块挪到空格，把 1–8 排好序就赢。");
+    return { destroy: function () {} };
+  }
+
   window.GUIDE_LABS = {
     binge: { init: labBinge },
     blindbox: { init: labBlindbox },
@@ -2934,6 +3186,14 @@
     mahjong: { init: labMahjong },
     cards: { init: labCards },
     hiking: { init: labHiking },
-    perler: { init: labPerler }
+    perler: { init: labPerler },
+
+    /* 补充：让全部条目都有实验 */
+    podcast: { init: labPodcast },
+    craft: { init: labCraft },
+    homecook: { init: labHomecook },
+    origami: { init: labOrigami },
+    meditation: { init: labMeditation },
+    jigsaw: { init: labJigsaw }
   };
 })();
