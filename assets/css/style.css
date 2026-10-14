@@ -1,5 +1,5 @@
 /* =========================================================
-   人生浪费指南 · 暗色霓虹「赛博颓废」主题
+   半日闲 · 暗色霓虹「赛博闲趣」主题
    颜色系统 / 玻璃拟态 / 关键帧动画 / 响应式 / 降级
    ========================================================= */
 
@@ -275,6 +275,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 0 22px 60px; }
 .how-step span { font-size: 14px; line-height: 1.6; }
 .how-step.done span { text-decoration: line-through; color: var(--text-dim); }
 .how-tip { font-size: 13px; color: var(--amber); background: rgba(255, 176, 32, 0.08); border-left: 3px solid var(--amber); padding: 8px 12px; border-radius: 8px; }
+.how-rules { font-size: 13px; color: var(--text); background: rgba(0, 229, 255, 0.07); border-left: 3px solid #00E5FF; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; line-height: 1.7; }
+.how-rules b { color: #00E5FF; }
 .save-todo {
   margin-top: 14px; width: 100%; border: none; cursor: pointer; padding: 11px 16px;
   border-radius: 999px; font-size: 14px; font-weight: 700; color: #fff;
@@ -436,6 +438,102 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   transition: background .2s, transform .2s;
 }
 .modal-close:hover { background: rgba(255,77,109,0.4); transform: rotate(90deg); }
+.modal-share {
+  position: absolute; right: 58px; top: 14px;
+  padding: 7px 14px; border-radius: 999px; cursor: pointer;
+  font-size: 13px; font-weight: 600; white-space: nowrap;
+  background: rgba(0,229,255,0.12); color: var(--cyan);
+  border: 1px solid rgba(0,229,255,0.4);
+  transition: background .2s, transform .2s;
+}
+.modal-share:hover { background: rgba(0,229,255,0.22); transform: translateY(-1px); }
+
+/* ---------- 分享海报预览层 ---------- */
+.poster-modal {
+  position: fixed; inset: 0; z-index: 120;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px; animation: fade .25s ease;
+}
+.poster-modal[hidden] { display: none; }
+.poster-backdrop { position: absolute; inset: 0; background: rgba(5,7,14,0.82); backdrop-filter: blur(4px); overflow: hidden; }
+.poster-backdrop::before, .poster-backdrop::after {
+  content: ""; position: absolute; border-radius: 50%; filter: blur(46px); pointer-events: none; opacity: .55;
+}
+.poster-backdrop::before {
+  width: 460px; height: 460px; left: -90px; top: -70px;
+  background: radial-gradient(circle, rgba(255,46,136,0.55), transparent 70%);
+  animation: posterSpot1 15s ease-in-out infinite;
+}
+.poster-backdrop::after {
+  width: 520px; height: 520px; right: -110px; bottom: -90px;
+  background: radial-gradient(circle, rgba(0,229,255,0.5), transparent 70%);
+  animation: posterSpot2 19s ease-in-out infinite;
+}
+.poster-card {
+  position: relative; z-index: 1; max-width: 360px; width: 100%;
+  background: linear-gradient(160deg, var(--bg-2), var(--bg-1));
+  border: 1px solid var(--glass-line); border-radius: var(--radius);
+  padding: 18px; box-shadow: var(--shadow);
+  animation: posterIn .5s cubic-bezier(.2,.85,.25,1) both, posterFloat 7s ease-in-out 1.1s infinite;
+}
+.poster-preview {
+  position: relative;
+  border-radius: var(--radius-sm); overflow: hidden;
+  background: #0B0D14; border: 1px solid var(--glass-line);
+  animation: posterGlow 4.5s ease-in-out infinite;
+}
+.poster-preview img { display: block; width: 100%; height: auto; }
+.poster-preview::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 7%; height: 18%;
+  pointer-events: none; mix-blend-mode: screen;
+  background-repeat: no-repeat;
+  background-image:
+    radial-gradient(circle at 12% 42%, rgba(0,229,255,0.95) 0 1.6px, transparent 2px),
+    radial-gradient(circle at 30% 74%, rgba(255,46,136,0.95) 0 1.6px, transparent 2px),
+    radial-gradient(circle at 50% 34%, rgba(255,255,255,0.95) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 68% 66%, rgba(124,77,255,0.95) 0 1.7px, transparent 2px),
+    radial-gradient(circle at 86% 30%, rgba(0,229,160,0.95) 0 1.3px, transparent 2px);
+  animation: posterStars 5s ease-in-out infinite;
+}
+@keyframes posterStars {
+  0%, 100% { opacity: .4; transform: translateY(4px); }
+  50%      { opacity: 1;  transform: translateY(-2px); }
+}
+@keyframes posterIn {
+  from { opacity: 0; transform: translateY(18px) scale(.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes posterFloat {
+  0%, 100% { transform: translateY(0); box-shadow: var(--shadow), 0 0 0 rgba(0,229,255,0); }
+  50%      { transform: translateY(-6px); box-shadow: var(--shadow), 0 14px 40px rgba(0,229,255,0.18); }
+}
+@keyframes posterGlow {
+  0%, 100% { box-shadow: 0 0 0 rgba(124,77,255,0); }
+  50%      { box-shadow: 0 0 26px rgba(124,77,255,0.28); }
+}
+@keyframes posterSpot1 {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(60px,40px) scale(1.15); }
+}
+@keyframes posterSpot2 {
+  0%, 100% { transform: translate(0,0) scale(1); }
+  50%      { transform: translate(-50px,-30px) scale(1.2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .poster-card, .poster-preview, .poster-preview::after, .poster-backdrop::before, .poster-backdrop::after { animation: none !important; }
+}
+.poster-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; }
+.poster-btn {
+  flex: 1 1 auto; min-width: 96px; padding: 10px 12px; cursor: pointer;
+  font-size: 13px; font-weight: 600; border-radius: 10px;
+  border: 1px solid var(--glass-line); background: rgba(255,255,255,0.06); color: var(--text);
+  transition: background .2s, transform .2s;
+}
+.poster-btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-1px); }
+.poster-btn.save { background: rgba(0,229,160,0.16); color: var(--green); border-color: rgba(0,229,160,0.4); }
+.poster-btn.share { background: rgba(0,229,255,0.16); color: var(--cyan); border-color: rgba(0,229,255,0.4); }
+.poster-btn.close { background: rgba(255,77,109,0.14); color: #ff7d96; border-color: rgba(255,77,109,0.35); }
+.poster-tip { margin: 4px 0 0; font-size: 12px; color: var(--text-dim); text-align: center; }
 .modal-head { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 18px; }
 .modal-emoji { font-size: 52px; line-height: 1; filter: drop-shadow(0 0 12px rgba(124,77,255,0.6)); }
 .modal-cat {
@@ -450,6 +548,20 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 .modal-explain .mech { color: var(--cyan); font-weight: 600; }
 .modal-tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 22px; }
 .modal-tags .card-tag { cursor: default; }
+
+/* ---------- 弹窗：这项能给你什么 ---------- */
+.modal-benefit {
+  margin: 4px 0 20px; padding: 14px 18px;
+  background: rgba(0, 229, 160, 0.06); border: 1px solid rgba(0, 229, 160, 0.22);
+  border-radius: var(--radius-sm);
+}
+.bn-head { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+.bn-promote { font-size: 13px; color: var(--text); font-weight: 600; margin-bottom: 6px; }
+.bn-raise { font-size: 13px; color: var(--amber); margin-bottom: 10px; }
+.bn-list { list-style: none; margin: 0; padding: 0; }
+.bn-list li { font-size: 14px; line-height: 1.7; color: var(--text); padding: 3px 0; border-top: 1px dashed rgba(255, 255, 255, 0.08); }
+.bn-list li:first-child { border-top: none; }
+.bn-list li b { color: var(--cyan); margin-right: 4px; }
 
 /* ---------- 实验区 ---------- */
 .lab { border-top: 1px dashed var(--glass-line); padding-top: 18px; }
@@ -476,15 +588,13 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 .lab-sound { margin-left: 8px; border: 1px solid var(--glass-line); background: var(--glass); color: var(--text); cursor: pointer; width: 30px; height: 30px; border-radius: 999px; font-size: 15px; line-height: 1; transition: transform .15s, box-shadow .2s; }
 .lab-sound:hover { transform: translateY(-1px) scale(1.08); box-shadow: 0 0 14px rgba(0,229,255,0.4); }
 .lab-center {
-  position: relative; z-index: 2; width: 100%;
   display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px;
   align-items: center; justify-content: center;
-  padding: 10px 12px 0;
+  padding: 14px 12px 0;
 }
 .lab-readout {
-  position: relative; z-index: 2; width: 100%;
   display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-  padding: 12px 12px 14px;
+  padding: 10px 12px 0;
 }
 .lab-metric {
   min-width: 76px; padding: 7px 12px; border-radius: var(--radius-sm);
@@ -518,7 +628,7 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   background: rgba(255,255,255,0.14); color: inherit;
 }
 
-/* ---------- 今日盲盒 · 躺平抽签机 ---------- */
+/* ---------- 今日盲盒 · 闲趣抽签机 ---------- */
 .lucky { margin: 34px 0 6px; }
 /* ---------- 盲盒 + 摸鱼人格：合并卡片 + 圆形切换 ---------- */
 .duo {

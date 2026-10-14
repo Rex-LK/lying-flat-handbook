@@ -1,5 +1,5 @@
 /* =========================================================
-   人生浪费指南 · 摸鱼人格测试 + 分享海报 / 今日签
+   半日闲 · 摸鱼人格测试 + 分享海报 / 今日签
    - 10 题小测 → 10 型人格 → 推荐条目组合
    - canvas 生成本地海报（今日签 / 人格结果），一键保存 PNG
    零依赖纯静态，file:// 下完整可用。
@@ -38,7 +38,7 @@
     he: {
       emoji: "🐱", name: "治愈躺平型", tagline: "被温柔接住的那一秒",
       tags: ["催产素", "副交感", "减压", "感官奖赏"],
-      desc: "毛茸茸、呼噜声、一缸慢悠悠的鱼，是你的充电桩。触觉与听觉的双重 ASMR 触发催产素，副交感接管、皮质醇下降——你不需要刺激，你需要的是被接住。这不是颓废，是刚需。"
+      desc: "毛茸茸、呼噜声、一缸慢悠悠的鱼，是你的充电桩。触觉与听觉的双重 ASMR 触发催产素，副交感接管、皮质醇下降——你不需要刺激，你需要的是被接住。这不是偷懒，是刚需。"
     },
     qu: {
       emoji: "🦎", name: "猎奇探索型", tagline: "越怪越上头",
@@ -214,7 +214,7 @@
     return '' +
       '<div class="pz-card">' +
         '<span class="pz-kicker">🧭 摸鱼人格</span>' +
-        '<h3 class="pz-title">10 道题，测出你的<span class="glow-pink">颓废人格</span></h3>' +
+        '<h3 class="pz-title">10 道题，测出你的<span class="glow-pink">闲趣人格</span></h3>' +
         '<p class="pz-sub">没有对错，只有你更被哪种「爽点机制」拿捏。测完给你一组推荐，或许哪天真想在生活里试一个。</p>' +
         '<button class="lab-btn pz-start" type="button" data-act="start">开始测试 →</button>' +
         '<span class="pz-note">约 1 分钟 · 结果存在本地，不上传</span>' +
@@ -316,6 +316,64 @@
     if (line) lines.push(line);
     return lines;
   }
+  // 指标进度条（多巴胺 / 内啡肽）
+  function bar(ctx, x, y, w, label, val, color) {
+    ctx.textAlign = "left"; ctx.fillStyle = "#D7DAE6"; ctx.font = "600 18px " + EMOJI_FONT;
+    ctx.fillText(label, x, y);
+    ctx.textAlign = "right"; ctx.fillStyle = color; ctx.font = "700 18px " + FONT;
+    ctx.fillText(String(val), x + w, y);
+    var by = y + 14, bh = 14;
+    ctx.fillStyle = "rgba(255,255,255,0.08)"; rr(ctx, x, by, w, bh, 7); ctx.fill();
+    var pct = Math.min(100, Math.max(0, val)) / 100;
+    var fw = Math.max(10, Math.round(w * pct));
+    ctx.fillStyle = color; rr(ctx, x, by, fw, bh, 7); ctx.fill();
+    ctx.textAlign = "left";
+    return by + bh + 24;
+  }
+  // 标签下方空白处的氛围装饰：当前条目的 emoji 点缀 + 星尘 + 霓虹流光带
+  function drawAmbience(ctx, W, y0, y1, emoji) {
+    var h = y1 - y0;
+    var midY = Math.round(y0 + h * 0.52);
+    var g = ctx.createLinearGradient(64, 0, W - 64, 0);
+    g.addColorStop(0, "rgba(0,229,255,0)");
+    g.addColorStop(0.5, "rgba(0,229,255,0.30)");
+    g.addColorStop(1, "rgba(0,229,255,0)");
+    ctx.strokeStyle = g; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(64, midY); ctx.lineTo(W - 64, midY); ctx.stroke();
+    if (emoji) {
+      var spots = [[0.16,0.30,60,0.20],[0.5,0.72,44,0.16],[0.82,0.32,66,0.22],[0.66,0.6,38,0.15]];
+      spots.forEach(function (p) {
+        var x = 64 + p[0] * (W - 128);
+        var y = y0 + 8 + p[1] * (h - 16);
+        ctx.save();
+        ctx.globalAlpha = p[3];
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.font = p[2] + "px " + EMOJI_FONT;
+        ctx.fillText(emoji, x, y);
+        ctx.restore();
+      });
+    }
+    var stars = [
+      [0.10, 0.30, 2.0, "rgba(0,229,255,0.9)"],
+      [0.24, 0.72, 1.6, "rgba(255,46,136,0.85)"],
+      [0.40, 0.24, 1.4, "rgba(255,255,255,0.9)"],
+      [0.55, 0.80, 2.0, "rgba(124,77,255,0.9)"],
+      [0.68, 0.38, 1.5, "rgba(0,229,160,0.9)"],
+      [0.82, 0.66, 1.8, "rgba(0,229,255,0.85)"],
+      [0.92, 0.28, 1.3, "rgba(255,255,255,0.8)"],
+      [0.33, 0.56, 1.2, "rgba(255,176,32,0.85)"]
+    ];
+    stars.forEach(function (s) {
+      var x = 64 + s[0] * (W - 128);
+      var y = y0 + 10 + s[1] * (h - 20);
+      var rg = ctx.createRadialGradient(x, y, 0, x, y, s[2] * 7);
+      rg.addColorStop(0, s[3]); rg.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = rg;
+      ctx.beginPath(); ctx.arc(x, y, s[2] * 7, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.beginPath(); ctx.arc(x, y, s[2], 0, Math.PI * 2); ctx.fill();
+    });
+  }
   function makePoster(cfg) {
     var W = 750, H = 1120, dpr = 2;
     var cv = document.createElement("canvas"); cv.width = W * dpr; cv.height = H * dpr;
@@ -328,39 +386,93 @@
     rr(ctx, 28, 28, W - 56, H - 56, 34); ctx.stroke();
     ctx.textAlign = "center";
     ctx.fillStyle = "#00E5FF"; ctx.font = "600 20px " + FONT;
-    ctx.fillText(cfg.kicker || "人生浪费指南 · 躺平研究所", W / 2, 100);
-    ctx.fillStyle = "#8A90A6"; ctx.font = "16px " + FONT;
-    ctx.fillText(cfg.date || "", W / 2, 132);
-    ctx.font = "128px " + EMOJI_FONT; ctx.fillText(cfg.emoji || "🛋️", W / 2, 268);
-    ctx.fillStyle = "#FFFFFF"; ctx.font = "800 44px " + FONT; ctx.fillText(cfg.title, W / 2, 344);
+    ctx.fillText(cfg.kicker || "半日闲 · 慢生活研究所", W / 2, 100);
+    if (cfg.date) { ctx.fillStyle = "#8A90A6"; ctx.font = "16px " + FONT; ctx.fillText(cfg.date, W / 2, 132); }
+    ctx.font = "120px " + EMOJI_FONT; ctx.fillText(cfg.emoji || "🍵", W / 2, 248);
+    ctx.fillStyle = "#FFFFFF"; ctx.font = "800 44px " + FONT; ctx.fillText(cfg.title, W / 2, 320);
     ctx.fillStyle = "#9AA0B4"; ctx.font = "400 21px " + FONT;
     var subLines = wrap(ctx, cfg.sub || "", W - 120);
-    var sy = 380;
+    var sy = 356;
     subLines.forEach(function (l) { ctx.fillText(l, W / 2, sy); sy += 28; });
-    var divY = Math.max(sy + 12, 424);
+    var divY = Math.max(sy + 18, 398);
     ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(90, divY); ctx.lineTo(W - 90, divY); ctx.stroke();
-    ctx.textAlign = "left"; ctx.font = "400 19px " + FONT; ctx.fillStyle = "#D7DAE6";
-    var y = divY + 42;
-    (cfg.lines || []).forEach(function (p) {
-      wrap(ctx, p, W - 128).forEach(function (l) { ctx.fillText(l, 64, y); y += 30; });
+    ctx.beginPath(); ctx.moveTo(64, divY); ctx.lineTo(W - 64, divY); ctx.stroke();
+    var cx = 64, cw = W - 128, y = divY + 46;
+    ctx.textAlign = "left";
+    if (cfg.dopa != null) y = bar(ctx, cx, y, cw, "🧠 多巴胺", cfg.dopa, "rgba(0,229,160,1)");
+    if (cfg.endo != null) y = bar(ctx, cx, y, cw, "💜 内啡肽", cfg.endo, "rgba(0,229,255,1)");
+    if (cfg.persona) {
+      ctx.textAlign = "left";
+      ctx.font = "600 19px " + EMOJI_FONT; ctx.fillStyle = "#FF2E88";
+      ctx.fillText("🎯 适合人格", cx, y);
+      ctx.fillStyle = "#FFFFFF"; ctx.font = "700 21px " + FONT;
+      ctx.fillText(cfg.persona, cx + 124, y);
+      y += 38;
+    }
+    if (cfg.play) {
+      ctx.textAlign = "left";
+      ctx.font = "600 19px " + EMOJI_FONT; ctx.fillStyle = "#7C4DFF";
+      ctx.fillText("🎮 玩法", cx, y);
+      ctx.fillStyle = "#D7DAE6"; ctx.font = "400 19px " + FONT;
+      wrap(ctx, cfg.play, cw - 92).forEach(function (l) { ctx.fillText(l, cx + 92, y); y += 27; });
+      y += 16;
+    }
+    if (cfg.principle) {
+      ctx.textAlign = "left";
+      ctx.font = "600 19px " + EMOJI_FONT; ctx.fillStyle = "#FFC107";
+      ctx.fillText(cfg.principleLabel || "🧩 上头原理", cx, y);
+      ctx.fillStyle = "#C9CDDA"; ctx.font = "400 18px " + FONT;
+      wrap(ctx, cfg.principle, cw - 104).forEach(function (l) { ctx.fillText(l, cx + 104, y); y += 26; });
+      y += 14;
+    }
+    if (cfg.food) {
+      ctx.textAlign = "left";
+      ctx.font = "600 19px " + EMOJI_FONT; ctx.fillStyle = "#FF8A65";
+      ctx.fillText("🍽️ 食话", cx, y);
+      ctx.fillStyle = "#FFCCBC"; ctx.font = "400 18px " + FONT;
+      wrap(ctx, cfg.food, cw - 96).forEach(function (l) { ctx.fillText(l, cx + 96, y); y += 26; });
+      y += 14;
+    }
+    if (cfg.almanac) {
+      ctx.textAlign = "left";
+      ctx.font = "600 18px " + EMOJI_FONT; ctx.fillStyle = "#FFB300";
+      ctx.fillText("📅 今日宜忌", cx, y);
+      ctx.fillStyle = "#E6C97A"; ctx.font = "400 18px " + FONT;
+      ctx.fillText(cfg.almanac, cx + 118, y);
+      y += 34;
+    }
+    if (cfg.joke) {
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#9AA0B4"; ctx.font = "italic 17px " + FONT;
+      wrap(ctx, "“" + cfg.joke + "”", cw).forEach(function (l) { ctx.fillText(l, cx, y); y += 25; });
       y += 8;
-    });
-    y += 8;
-    var cx = 64;
+    }
+    if (cfg.lines && cfg.lines.length) {
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#D7DAE6"; ctx.font = "400 18px " + FONT;
+      cfg.lines.forEach(function (p) {
+        wrap(ctx, p, cw).forEach(function (l) { ctx.fillText(l, cx, y); y += 26; });
+        y += 4;
+      });
+    }
+    ctx.textAlign = "left";
+    var tx = cx; y += 4;
     (cfg.tags || []).forEach(function (t) {
       ctx.font = "600 18px " + FONT;
       var tw = ctx.measureText("#" + t).width + 26;
-      if (cx + tw > W - 64) { cx = 64; y += 40; }
-      ctx.fillStyle = "rgba(255,255,255,0.06)"; rr(ctx, cx, y - 24, tw, 32, 16); ctx.fill();
-      ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1; rr(ctx, cx, y - 24, tw, 32, 16); ctx.stroke();
-      ctx.fillStyle = "#00E5FF"; ctx.fillText("#" + t, cx + 13, y - 2);
-      cx += tw + 10;
+      if (tx + tw > W - 64) { tx = 64; y += 40; }
+      ctx.fillStyle = "rgba(255,255,255,0.06)"; rr(ctx, tx, y - 22, tw, 30, 15); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.18)"; ctx.lineWidth = 1; rr(ctx, tx, y - 22, tw, 30, 15); ctx.stroke();
+      ctx.fillStyle = "#00E5FF"; ctx.fillText("#" + t, tx + 13, y);
+      tx += tw + 10;
     });
+    var ambTop = y + 26, ambBottom = H - 74;
+    if (ambBottom - ambTop > 66) drawAmbience(ctx, W, ambTop, ambBottom, cfg.ambEmoji);
     ctx.textAlign = "center";
-    ctx.fillStyle = "#8A90A6"; ctx.font = "15px " + FONT; ctx.fillText(cfg.footer || "", W / 2, H - 74);
+    ctx.fillStyle = "#8A90A6"; ctx.font = "15px " + FONT;
+    if (cfg.footer) ctx.fillText(cfg.footer, W / 2, H - 56);
     ctx.fillStyle = "#00E5FF"; ctx.font = "600 15px " + FONT;
-    ctx.fillText(location.host ? location.host : "local · 双击即用", W / 2, H - 48);
+    ctx.fillText(location.host ? location.host : "local · 双击即用", W / 2, H - 32);
     return cv;
   }
   function download(cv, name) {
@@ -378,13 +490,22 @@
 
   function posterFromItem(item) {
     if (!item) return;
+    var H = window.BX_HELPERS;
     var cv = makePoster({
       kicker: "🎁 今日盲盒 · 今日签",
       date: dayText(),
       emoji: item.emoji,
       title: item.name,
       sub: item.hook,
-      lines: ["「" + item.hook + "」", "🧠 多巴胺 " + dopa(item.id) + " · 💜 内啡肽 " + endo(item.id)],
+      dopa: dopa(item.id), endo: endo(item.id),
+      persona: H ? H.personaName(item) : "",
+      play: H ? H.playFor(item) : "",
+      joke: H ? H.jokeFor(item) : "",
+      principle: H ? H.principleOf(item) : "",
+      principleLabel: H ? H.principleLabel(item) : "",
+      food: H ? H.foodMore(item) : "",
+      almanac: H ? H.almanacFor(item) : "",
+      ambEmoji: item.emoji,
       tags: item.tags.slice(0, 4),
       footer: "点开就能玩它的互动小实验 →"
     });
@@ -401,6 +522,7 @@
       sub: "“" + t.tagline + "”",
       lines: [t.desc].concat(recs.map(function (r) { return "· " + r.emoji + " " + r.name; })),
       tags: t.tags.slice(0, 4),
+      ambEmoji: t.emoji,
       footer: "来测测你是哪种 →"
     });
     download(cv, "摸鱼人格-" + t.name + "-" + dayKey() + ".png");

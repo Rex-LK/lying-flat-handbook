@@ -1,5 +1,5 @@
 /* =========================================================
-   人生浪费指南 · 互动小实验注册表
+   半日闲 · 互动小实验注册表
    契约：window.GUIDE_LABS = { <itemId>: { init: function(container){...; return {destroy} } } }
    - 所有实验「鼠标点击」即可运行
    - init 返回的对象必须含 destroy()，关闭详情时由 app.js 调用以清理动画与监听
@@ -49,14 +49,21 @@
     };
   }
 
+  // 控件层（按钮 / 读数）统一放到实验框下方、「怎么玩」上方
+  function insertBelowStage(container, node) {
+    var host = container.parentElement || container;
+    var cap = host.querySelector(".lab-caption");
+    if (cap) host.insertBefore(node, cap); else host.appendChild(node);
+    return node;
+  }
   function makeCenter(container) {
     var c = el("div", "lab-center");
-    container.appendChild(c);
+    insertBelowStage(container, c);
     return c;
   }
   function makeReadout(container) {
     var box = el("div", "lab-readout");
-    container.appendChild(box);
+    insertBelowStage(container, box);
     return {
       set: function (items) {
         box.innerHTML = "";
@@ -2541,27 +2548,50 @@
     var read = makeReadout(container);
     var b = btn("🀄 摸牌", "cyan");
     center.appendChild(b);
-    var hand = 0, wins = 0, listening = false, glow = 0;
-    b.addEventListener("click", function () {
-      if (hand >= 13) {
-        if (Math.random() < (listening ? 0.32 : 0.06)) {
-          wins++; hand = 0; listening = false; glow = 1;
-          setCaption(container, "胡了！🀄 推倒长城的脆响 + 全桌的「哇」，社交与成就一起点燃。");
-        } else {
-          hand = 0; listening = false;
-          setCaption(container, "没胡，打出去重来。就差一张的近因效应，比一帆风顺更上头。");
-        }
-      } else {
-        hand++;
-        if (hand === 13) { listening = true; setCaption(container, "听牌了！🀄 就等那一张——变比率强化的最高潮。"); }
-        else setCaption(container, "摸牌如开奖，每一次都是随机奖励的期待。");
-      }
+    var bAgain = btn("🔁 再来一局", "");
+    bAgain.style.display = "none";
+    center.appendChild(bAgain);
+    // 麻将牌面：只保留万/条/筒 1-9 三种花色，每次随机抽，避免一直同一种牌
+    var TILES = ["🀇", "🀈", "🀉", "🀊", "🀋", "🀌", "🀍", "🀎", "🀏",
+                 "🀐", "🀑", "🀒", "🀓", "🀔", "🀕", "🀖", "🀗", "🀘",
+                 "🀙", "🀚", "🀛", "🀜", "🀝", "🀞", "🀟", "🀠", "🀡"];
+    function rndTile() { return TILES[Math.floor(Math.random() * TILES.length)]; }
+    var hand = 0, handTiles = [], wins = 0, listening = false, glow = 0, settled = false, lastWin = false, resultText = "";
+    function refresh() {
       read.set([
         { val: hand, label: "手牌数" },
         { val: wins, label: "胡牌", kind: wins ? "good" : "" },
-        { val: listening ? "听牌" : "—", label: "状态", kind: listening ? "cyan" : "" }
+        { val: settled ? (lastWin ? "胡了" : "没胡") : (listening ? "听牌" : "—"), label: "状态", kind: settled ? (lastWin ? "good" : "") : (listening ? "cyan" : "") }
       ]);
+    }
+    b.addEventListener("click", function () {
+      if (settled) return;
+      if (hand >= 13) {
+        // 摸到第 14 张：判定胡牌，然后「停住」定格，等用户点「再来一局」才重开
+        handTiles.push(rndTile()); hand = 14; listening = false; settled = true;
+        lastWin = Math.random() < 0.32;
+        if (lastWin) {
+          wins++; glow = 1; resultText = "🀄 胡了！点「再来一局」继续";
+          setCaption(container, "胡了！🀄 推倒长城的脆响 + 全桌的「哇」，社交与成就一起点燃。点「再来一局」继续。");
+        } else {
+          resultText = "就差这一张……点「再来一局」";
+          setCaption(container, "就差这一张没胡。近因效应让人更想再来一局——点「再来一局」继续。");
+        }
+        b.style.display = "none"; bAgain.style.display = "";
+      } else {
+        handTiles.push(rndTile()); hand++;
+        if (hand === 13) { listening = true; setCaption(container, "听牌了！🀄 就等那一张——变比率强化的最高潮。"); }
+        else setCaption(container, "摸牌如开奖，每一次都是随机奖励的期待。");
+      }
+      refresh();
     });
+    bAgain.addEventListener("click", function () {
+      hand = 0; handTiles = []; listening = false; settled = false; lastWin = false; glow = 0; resultText = "";
+      b.style.display = ""; bAgain.style.display = "none";
+      setCaption(container, "新的一局，重新摸牌——每一次都是随机奖励的期待。");
+      refresh();
+    });
+    refresh();
     var lp = loop(function (t) {
       var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
       var g = ctx.createLinearGradient(0, 0, 0, h);
@@ -2571,15 +2601,24 @@
       var total = 14, cw = 26, gp = 4, startX = w / 2 - (total * (cw + gp)) / 2 + cw / 2;
       for (var i = 0; i < total; i++) {
         var x = startX + i * (cw + gp), y = h * 0.5, filled = i < hand;
-        ctx.fillStyle = filled ? "#0b0d14" : "rgba(255,255,255,0.05)";
-        ctx.strokeStyle = filled ? (glow > 0 ? "rgba(0,229,160," + (0.4 + glow * 0.6) + ")" : "rgba(255,255,255,0.25)") : "rgba(255,255,255,0.1)";
-        ctx.lineWidth = 2;
-        roundRect(ctx, x - cw / 2, y - 34, cw, 50, 6); ctx.fill(); ctx.stroke();
-        if (filled) { ctx.fillStyle = "#00E5A0"; ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("🀄", x, y); }
+        if (filled) {
+          ctx.fillStyle = "#f4f5fb";
+          ctx.strokeStyle = glow > 0 ? "rgba(0,229,160," + (0.4 + glow * 0.6) + ")" : "rgba(0,0,0,0.25)";
+          ctx.lineWidth = 2;
+          roundRect(ctx, x - cw / 2, y - 34, cw, 50, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "#0b0d14"; ctx.font = "22px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText(handTiles[i] || "🀄", x, y);
+        } else {
+          ctx.fillStyle = "rgba(255,255,255,0.05)";
+          ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.lineWidth = 1.5;
+          roundRect(ctx, x - cw / 2, y - 34, cw, 50, 6); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = "rgba(255,255,255,0.35)"; ctx.font = "18px sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+          ctx.fillText("🀫", x, y);
+        }
       }
       ctx.textBaseline = "alphabetic";
       ctx.fillStyle = "rgba(255,255,255,0.8)"; ctx.font = "13px sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(listening ? "🀄 听牌中，就差一张！" : "点「摸牌」，每一次都是开奖", w / 2, h * 0.82);
+      ctx.fillText(settled ? resultText : (listening ? "🀄 听牌中，就差一张！" : "点「摸牌」，每一次都是开奖"), w / 2, h * 0.82);
     });
     lp.start();
     return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
@@ -3269,6 +3308,481 @@
     return { destroy: function () {} };
   }
 
+  /* =======================================================
+     拓展实验：钓鱼 / 射箭 / 室内·室外·高空·低空
+     ======================================================= */
+  function labFishing(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🎣 抛竿", "cyan");
+    center.appendChild(b);
+    var caught = 0, casts = 0, biting = false, biteT = 0, timer = null;
+    function cast() {
+      casts++; biting = false;
+      setCaption(container, "抛竿，盯着浮漂……鱼什么时候开口全看运气（变比率强化）。");
+      read.set([{ val: casts, label: "抛竿", kind: "cyan" }, { val: caught, label: "钓到", kind: "good" }]);
+      clearTimeout(timer);
+      timer = setTimeout(function () { biting = true; biteT = 0; setCaption(container, "浮漂一顿！快提竿——期待被拉到最高。"); }, rand(1400, 4200));
+    }
+    b.addEventListener("click", function () {
+      if (biting) {
+        biting = false; clearTimeout(timer); caught++;
+        beep(520, 0.08, "sine", 0.06);
+        var fish = ["鲫鱼", "鲤鱼", "小龙虾", "空钩", "拖鞋"];
+        setCaption(container, "提竿！上钩的是「" + fish[Math.floor(rand(0, fish.length))] + "」。期待奖励一次性结清。");
+        read.set([{ val: casts, label: "抛竿", kind: "cyan" }, { val: caught, label: "钓到", kind: "good" }]);
+      } else { cast(); }
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      var g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#06303f"); g.addColorStop(1, "#04222e");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = "rgba(0,229,255,0.12)"; ctx.lineWidth = 1;
+      for (var i = 0; i < 4; i++) {
+        ctx.beginPath();
+        for (var x = 0; x <= w; x += 10) { var y = h * (0.45 + i * 0.13) + Math.sin(x / 26 + t / 600 + i) * 4; if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        ctx.stroke();
+      }
+      var fx = w * 0.5, fy = h * 0.5;
+      if (biting) { biteT += 0.06; fy += Math.sin(biteT * 8) * 6 + 10; ctx.fillStyle = "rgba(0,229,160,0.95)"; }
+      else { fy += Math.sin(t / 500) * 3; ctx.fillStyle = "#FF2E88"; }
+      ctx.beginPath(); ctx.ellipse(fx, fy, 7, 4, 0, 0, 6.29); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(fx, 0); ctx.stroke();
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); clearTimeout(timer); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labArchery(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🏹 拉弓射箭", "amber");
+    center.appendChild(b);
+    var hits = 0, shots = 0, flash = 0, flashR = 0;
+    b.addEventListener("click", function () {
+      shots++; var r = Math.random();
+      var zone = r < 0.25 ? "红心" : r < 0.6 ? "黄心" : r < 0.85 ? "外环" : "脱靶";
+      if (zone !== "脱靶") { hits++; flash = 1; flashR = r < 0.25 ? 10 : r < 0.6 ? 22 : 34; beep(zone === "红心" ? 880 : 660, 0.07, "triangle", 0.06); }
+      setCaption(container, zone === "红心" ? "正中红心！操作性条件反射瞬间到账。" : zone === "脱靶" ? "偏了，再来一箭——不确定性让你停不下来。" : "稳稳扎进" + zone + "，心流又满一格。");
+      read.set([{ val: shots, label: "出手", kind: "cyan" }, { val: hits, label: "命中", kind: "good" }, { val: (shots ? Math.round(hits / shots * 100) : 0) + "%", label: "命中率" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var cx = w * 0.68, cy = h * 0.5;
+      [["#FF2E88", 46], ["#FFD23F", 34], ["#00E5FF", 22], ["#ffffff", 10]].forEach(function (rg) {
+        ctx.beginPath(); ctx.arc(cx, cy, rg[1], 0, 6.29); ctx.fillStyle = rg[0]; ctx.globalAlpha = 0.85; ctx.fill();
+      }); ctx.globalAlpha = 1;
+      ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, h * 0.82); ctx.lineTo(w, h * 0.82); ctx.stroke();
+      if (flash > 0) { flash -= 0.02; ctx.strokeStyle = "rgba(0,229,160," + clamp(flash, 0, 1) + ")"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, flashR, 0, 6.29); ctx.stroke(); }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labSkateboard(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🛹 踩一脚", "cyan");
+    center.appendChild(b);
+    var ok = 0, fail = 0, hop = 0, x = 0.12;
+    b.addEventListener("click", function () {
+      if (Math.random() < 0.55) { ok++; hop = 1; beep(500, 0.06, "square", 0.05); setCaption(container, "ollie 站上去了！近因效应让你只记得这一下爽。"); }
+      else { fail++; hop = 0.4; setCaption(container, "摔了——但下一把肯定行，游戏的爽点就在这。"); }
+      read.set([{ val: ok, label: "站上去", kind: "good" }, { val: fail, label: "摔了", kind: "cyan" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var ground = h * 0.78; ctx.fillStyle = "#11141d"; ctx.fillRect(0, ground, w, h - ground);
+      x += 0.004; if (x > 0.92) x = 0.12;
+      var sx = x * w, sy = ground - 14 - (hop > 0 ? Math.sin(hop * Math.PI) * 26 : 0);
+      if (hop > 0) hop -= 0.03;
+      ctx.fillStyle = "#FF8A3D"; ctx.shadowColor = "#FF8A3D"; ctx.shadowBlur = 12;
+      ctx.fillRect(sx - 14, sy, 28, 8); ctx.fillRect(sx - 12, sy + 8, 4, 8); ctx.fillRect(sx + 8, sy + 8, 4, 8); ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(124,77,255,0.3)"; ctx.lineWidth = 6;
+      for (var i = 0; i < 8; i++) { var lx = ((i * 140 - (t / 8) % 140) % (w + 140)); if (lx < -140) lx += w + 140; ctx.fillRect(lx, ground - 26, 6, 26); }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labSki(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("⛷️ 滑一段", "cyan");
+    center.appendChild(b);
+    var turns = 0, fall = 0, speed = 0;
+    b.addEventListener("click", function () {
+      if (Math.random() < 0.8) { turns++; speed = clamp(speed + 10, 0, 100); beep(420 + turns * 8, 0.05, "sine", 0.05); setCaption(container, "卡宾转弯，风灌进领口——心流加内啡肽双发。"); }
+      else { fall++; speed = 0; setCaption(container, "摔了，雪软不疼。起来再滑，掌控感马上回来。"); }
+      read.set([{ val: turns, label: "转弯", kind: "good" }, { val: fall, label: "摔", kind: "cyan" }, { val: Math.round(speed) + "%", label: "速度感" }]);
+    });
+    var scroll = 0;
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      scroll += speed * 0.01 + 0.3;
+      ctx.strokeStyle = "rgba(255,255,255,0.14)"; ctx.lineWidth = 2;
+      for (var i = 0; i < 6; i++) {
+        var yy = h * (0.2 + i * 0.13), off = (scroll + i * 40) % 80;
+        ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(w, yy + Math.sin((scroll + i * 30) / 60) * 10); ctx.stroke();
+      }
+      var sx = w * 0.45, sy = h * 0.6;
+      ctx.fillStyle = "#00E5FF"; ctx.shadowColor = "#00E5FF"; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.ellipse(sx, sy, 10, 5, 0, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labSurf(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🏄 划水等浪", "cyan");
+    center.appendChild(b);
+    var rides = 0, paddle = 0, waiting = false, timer = null;
+    function wait() {
+      waiting = true; b.textContent = "🏄 等浪…";
+      setCaption(container, "趴板上划水，盯着海面——变比率强化反复吊你胃口。");
+      clearTimeout(timer);
+      timer = setTimeout(function () { waiting = false; b.textContent = "🏄 冲！"; setCaption(container, "一个浪推起来了！站上去——期待奖励一次性结清。"); }, rand(1500, 4000));
+    }
+    b.addEventListener("click", function () {
+      if (waiting) return;
+      if (b.textContent.indexOf("冲") >= 0) {
+        rides++; beep(600, 0.08, "sine", 0.06); b.textContent = "🏄 划水等浪";
+        setCaption(container, "站上浪壁，内啡肽随失重涌上来。再来一个？");
+      } else { paddle++; wait(); }
+      read.set([{ val: rides, label: "冲浪", kind: "good" }, { val: paddle, label: "划水", kind: "cyan" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      var g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#06303f"); g.addColorStop(1, "#04222e");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      var riding = b.textContent.indexOf("冲") >= 0;
+      ctx.strokeStyle = "rgba(0,229,255,0.25)"; ctx.lineWidth = 2;
+      for (var i = 0; i < 3; i++) {
+        var phase = t / 500 + i * 2; ctx.beginPath();
+        for (var x = 0; x <= w; x += 10) {
+          var y = h * (0.55 + i * 0.15) + Math.sin(x / 40 + phase) * 10 + (riding ? -Math.sin(x / 20 + phase * 2) * 16 : 0);
+          if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        } ctx.stroke();
+      }
+      var sx = w * 0.3, sy = h * 0.5;
+      ctx.fillStyle = "#FF8A3D"; ctx.shadowColor = "#FF8A3D"; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.ellipse(sx, sy, 16, 7, 0, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); clearTimeout(timer); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labClimbing(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🧗 挪一步", "amber");
+    center.appendChild(b);
+    var height = 0, slip = 0;
+    b.addEventListener("click", function () {
+      if (Math.random() < 0.85) { height += Math.round(rand(0.4, 1.2) * 10) / 10; beep(380 + height * 10, 0.05, "triangle", 0.05); setCaption(container, "又上一个支点，全神贯注——心流把手机信号都屏蔽了。"); }
+      else { slip++; height = Math.max(0, height - 0.5); setCaption(container, "脚滑了一下，抓稳。害怕转成了专注，这很攀岩。"); }
+      read.set([{ val: height.toFixed(1) + "m", label: "高度", kind: "good" }, { val: slip, label: "脚滑", kind: "cyan" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "rgba(255,255,255,0.18)";
+      for (var i = 0; i < 5; i++) {
+        var cxp = w * (0.2 + i * 0.15);
+        for (var j = 0; j < 9; j++) {
+          var cyp = h * (0.12 + j * 0.1) - height * 8;
+          if (cyp > -20 && cyp < h + 20) { ctx.beginPath(); ctx.arc(cxp, cyp, 5, 0, 6.29); ctx.fill(); }
+        }
+      }
+      var clx = w * 0.45, cly = clamp(h * 0.7 - height * 40, 20, h * 0.9);
+      ctx.fillStyle = "#FF2E88"; ctx.shadowColor = "#FF2E88"; ctx.shadowBlur = 12;
+      ctx.beginPath(); ctx.arc(clx, cly, 9, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labSkydive(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🪂 跳出机舱", "amber");
+    center.appendChild(b);
+    var jumped = false, open = false, alt = 4000, fun = 0;
+    b.addEventListener("click", function () {
+      if (!jumped) { jumped = true; open = false; alt = 4000; b.textContent = "🪂 开伞"; setCaption(container, "自由落体！极端的感官刺激让大脑来不及焦虑，只来得及哇。"); }
+      else if (!open) { open = true; fun++; beep(300, 0.1, "sine", 0.06); b.textContent = "🪂 再来一次"; setCaption(container, "伞开了，应激反跳——皮质醇退潮，内啡肽漫上来。腿软但想再来。"); }
+      else { jumped = false; open = false; b.textContent = "🪂 跳出机舱"; setCaption(container, "回到地面，回味刚才的哇。"); }
+      read.set([{ val: jumped ? (open ? "已开伞" : "自由落体") : "地面", label: "状态", kind: "cyan" }, { val: fun, label: "爽次数", kind: "good" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#0a1530"); g.addColorStop(1, "#1a2a4a"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      if (open) alt = Math.max(0, alt - 30); else if (jumped) alt = Math.max(0, alt - 60);
+      var px = w * 0.5, py = open ? h * 0.32 : (jumped ? h * 0.25 + Math.sin(t / 200) * 4 : h * 0.2);
+      ctx.fillStyle = "#FF8A3D"; ctx.shadowColor = "#FF8A3D"; ctx.shadowBlur = 10;
+      ctx.beginPath(); ctx.arc(px, py, 8, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+      if (open) { ctx.strokeStyle = "#00E5FF"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py - 30, 26, Math.PI, 0); ctx.stroke(); ctx.beginPath(); ctx.moveTo(px - 26, py - 30); ctx.lineTo(px, py - 6); ctx.lineTo(px + 26, py - 30); ctx.stroke(); }
+      ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "12px sans-serif"; ctx.textAlign = "left"; ctx.fillText("高度 " + Math.round(alt) + "m", 12, 20);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labBilliards(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🎱 击球", "amber");
+    center.appendChild(b);
+    var pot = 0, shots = 0, flash = 0, fx = 0, fy = 0;
+    b.addEventListener("click", function () {
+      shots++; var make = Math.random() < 0.6;
+      if (make) { pot++; flash = 1; fx = mc.dims.w * 0.5; fy = mc.dims.h * 0.5; beep(700, 0.06, "sine", 0.05); }
+      setCaption(container, make ? "空心入袋！走位和落袋的即时反馈，多巴胺到账。" : "母球停了，目标球没进——再算一次。");
+      read.set([{ val: pot, label: "进球", kind: "good" }, { val: shots, label: "出杆", kind: "cyan" }, { val: (shots ? Math.round(pot / shots * 100) : 0) + "%", label: "进球率" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#0e5a3a"; ctx.fillRect(w * 0.08, h * 0.18, w * 0.84, h * 0.64);
+      ctx.strokeStyle = "rgba(255,255,255,0.4)"; ctx.lineWidth = 4; ctx.strokeRect(w * 0.08, h * 0.18, w * 0.84, h * 0.64);
+      ctx.fillStyle = "#000";
+      [[0.08, 0.18], [0.5, 0.15], [0.92, 0.18], [0.08, 0.82], [0.5, 0.85], [0.92, 0.82]].forEach(function (p) { ctx.beginPath(); ctx.arc(w * p[0], h * p[1], 8, 0, 6.29); ctx.fill(); });
+      var cols = ["#FF2E88", "#FFD23F", "#00E5FF", "#fff", "#FF8A3D"];
+      cols.forEach(function (c, i) { var a = t / 1000 + i; ctx.fillStyle = c; ctx.beginPath(); ctx.arc(w * 0.5 + Math.cos(a) * 40, h * 0.5 + Math.sin(a) * 30, 7, 0, 6.29); ctx.fill(); });
+      if (flash > 0) { flash -= 0.03; ctx.strokeStyle = "rgba(0,229,160," + clamp(flash, 0, 1) + ")"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(fx, fy, 18, 0, 6.29); ctx.stroke(); }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labFrisbee(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🥏 传一盘", "cyan");
+    center.appendChild(b);
+    var catchN = 0, drop = 0, flying = null;
+    b.addEventListener("click", function () {
+      if (flying) return;
+      flying = { p: 0 };
+      setCaption(container, "盘出手了，划过一道弧线……");
+      setTimeout(function () {
+        if (Math.random() < 0.7) { catchN++; beep(560, 0.06, "sine", 0.05); setCaption(container, "稳稳接住！社交奖赏加操作性条件反射，击掌走起。"); }
+        else { drop++; setCaption(container, "脱手了，捡回来再传——催产素还在。"); }
+        flying = null; read.set([{ val: catchN, label: "接住", kind: "good" }, { val: drop, label: "脱手", kind: "cyan" }]);
+      }, 600);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#0c2a18"; ctx.fillRect(0, h * 0.8, w, h * 0.2);
+      ctx.fillStyle = "#FF8A3D";
+      ctx.beginPath(); ctx.arc(w * 0.15, h * 0.72, 9, 0, 6.29); ctx.fill();
+      ctx.beginPath(); ctx.arc(w * 0.85, h * 0.72, 9, 0, 6.29); ctx.fill();
+      if (flying) {
+        flying.p += 0.03; var p = flying.p;
+        var fx = lerp(w * 0.15, w * 0.85, p), fy = lerp(h * 0.6, h * 0.6, p) - Math.sin(p * Math.PI) * 60;
+        ctx.fillStyle = "#FFD23F"; ctx.shadowColor = "#FFD23F"; ctx.shadowBlur = 10;
+        ctx.beginPath(); ctx.ellipse(fx, fy, 9, 3, 0, 0, 6.29); ctx.fill(); ctx.shadowBlur = 0;
+        if (p >= 1) flying = null;
+      }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labCamping(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("⛺ 生火 / 看星", "amber");
+    center.appendChild(b);
+    var fire = 0, stars = 0, built = false;
+    b.addEventListener("click", function () {
+      if (!built) { built = true; setCaption(container, "帐篷搭好了，手机信号也没了——注意力残留强制清退。"); }
+      else { fire = clamp(fire + 15, 0, 100); stars++; beep(300 + fire, 0.05, "sine", 0.04); setCaption(container, "火苗窜起来，副交感上线，皮质醇往下掉。"); }
+      read.set([{ val: built ? "已搭" : "没搭", label: "帐篷", kind: "cyan" }, { val: Math.round(fire) + "%", label: "火堆", kind: "good" }, { val: stars, label: "数过的星", kind: "cyan" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h;
+      var g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#0a1230"); g.addColorStop(1, "#1a2440"); ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      for (var i = 0; i < 30; i++) { var sx = (i * 53) % w, sy = (i * 97) % (h * 0.6); ctx.globalAlpha = 0.4 + 0.6 * Math.abs(Math.sin(t / 700 + i)); ctx.fillRect(sx, sy, 2, 2); }
+      ctx.globalAlpha = 1;
+      if (built) { var tx = w * 0.3, ty = h * 0.7; ctx.fillStyle = "#FF8A3D"; ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(tx - 30, ty + 30); ctx.lineTo(tx + 30, ty + 30); ctx.closePath(); ctx.fill(); }
+      if (fire > 0) { var fx = w * 0.65, fy = h * 0.78; ctx.fillStyle = "rgba(255,140,60," + clamp(fire / 100, 0, 1) + ")"; var fh = 10 + fire / 100 * 20 + Math.sin(t / 150) * 4; ctx.beginPath(); ctx.ellipse(fx, fy - fh / 2, 8, fh / 2, 0, 0, 6.29); ctx.fill(); }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  /* =======================================================
+     怀旧实验：拍画片 / 踢毽子 / 跳皮筋 / 抽陀螺 / 弹珠 / 折纸飞机
+     ======================================================= */
+  function labPog(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🃏 拍一下", "amber");
+    center.appendChild(b);
+    var win = 0, slap = 0, flash = 0;
+    b.addEventListener("click", function () {
+      slap++;
+      if (Math.random() < 0.5) { win++; flash = 1; beep(300, 0.05, "square", 0.06); setCaption(container, "脆响！翻过来了——变比率强化让你想再来一掌。"); }
+      else { setCaption(container, "没翻过来，再一巴掌——不确定性才上头。"); }
+      read.set([{ val: slap, label: "拍了", kind: "cyan" }, { val: win, label: "赢的", kind: "good" }, { val: (slap ? Math.round(win / slap * 100) : 0) + "%", label: "翻面率" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = "#cfcfe0"; ctx.fillRect(w * 0.5 - 22, h * 0.5 - 30, 44, 60);
+      ctx.fillStyle = "#FF2E88"; ctx.font = "bold 22px sans-serif"; ctx.textAlign = "center"; ctx.fillText("★", w * 0.5, h * 0.5 + 8);
+      if (flash > 0) { flash -= 0.02; ctx.fillStyle = "rgba(0,229,160," + clamp(flash, 0, 1) + ")"; ctx.font = "bold 18px sans-serif"; ctx.fillText("翻!", w * 0.5, h * 0.5 - 40); }
+      ctx.fillStyle = "rgba(255,138,61,0.85)"; ctx.fillRect(w * 0.5 - 10, h * 0.5 - 46 + Math.sin(t / 200) * 3, 20, 14);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labShuttlecock(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🪶 踢一脚", "cyan");
+    center.appendChild(b);
+    var keep = 0, drop = 0, air = 0;
+    b.addEventListener("click", function () {
+      if (Math.random() < 0.82) { keep++; air = 1; beep(440 + keep * 6, 0.05, "sine", 0.05); setCaption(container, "稳稳接住，连续第 " + keep + " 个——操作性条件反射把节奏接上了。"); }
+      else { drop++; keep = 0; setCaption(container, "掉了，捡起来重数。童年就是这样一次次重来。"); }
+      read.set([{ val: keep, label: "连续", kind: "good" }, { val: drop, label: "掉了", kind: "cyan" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var gy = h * 0.8; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+      var ky = gy - 40 - (air > 0 ? Math.abs(Math.sin(t / 180)) * 30 : 0);
+      ctx.fillStyle = "#FFD23F"; ctx.beginPath(); ctx.arc(w * 0.5, ky, 6, 0, 6.29); ctx.fill();
+      ctx.strokeStyle = "#fff"; for (var i = 0; i < 4; i++) { var a = i * Math.PI / 2 + t / 300; ctx.beginPath(); ctx.moveTo(w * 0.5, ky); ctx.lineTo(w * 0.5 + Math.cos(a) * 12, ky + Math.sin(a) * 12); ctx.stroke(); }
+      if (air > 0) air -= 0.02;
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labRubberband(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🪢 跳一下", "cyan");
+    center.appendChild(b);
+    var n = 0, fail = 0;
+    var rhyme = ["一二三四五六七", "马兰开花二十一", "二五六二五七"];
+    b.addEventListener("click", function () {
+      if (Math.random() < 0.8) { n++; beep(520, 0.05, "triangle", 0.05); setCaption(container, rhyme[n % 3] + "——节奏奖赏把杂念挡在门外。"); }
+      else { fail++; n = 0; setCaption(container, "踩到皮筋了，笑着重来。"); }
+      read.set([{ val: n, label: "连跳", kind: "good" }, { val: fail, label: "踩线", kind: "cyan" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var gy = h * 0.78;
+      ctx.strokeStyle = "#FF2E88"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(w * 0.2, gy); ctx.lineTo(w * 0.8, gy - Math.sin(t / 400) * 20); ctx.stroke();
+      ctx.fillStyle = "#00E5FF"; ctx.beginPath(); ctx.arc(w * 0.2, gy, 7, 0, 6.29); ctx.fill(); ctx.beginPath(); ctx.arc(w * 0.8, gy, 7, 0, 6.29); ctx.fill();
+      var jy = gy - 50 - Math.abs(Math.sin(t / 200)) * 24;
+      ctx.fillStyle = "#FF8A3D"; ctx.beginPath(); ctx.arc(w * 0.5, jy, 8, 0, 6.29); ctx.fill();
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labTop(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🌀 抽一鞭", "amber");
+    center.appendChild(b);
+    var spin = 0, best = 0;
+    b.addEventListener("click", function () {
+      spin += rand(40, 90); if (spin > best) best = Math.round(spin); beep(200, 0.06, "sawtooth", 0.05);
+      setCaption(container, "鞭子一甩，嗡——陀螺转得越久你越得意。");
+      read.set([{ val: Math.round(spin) + "°/s", label: "转速", kind: "cyan" }, { val: best + "°/s", label: "最久", kind: "good" }]);
+    });
+    var ang = 0;
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var gy = h * 0.72; ctx.strokeStyle = "rgba(255,255,255,0.2)"; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+      ang += spin / 60; if (spin > 0) spin -= 0.4; if (spin < 0) spin = 0;
+      var cx = w * 0.5, cy = gy - 14;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang);
+      ctx.fillStyle = "#FF8A3D"; ctx.beginPath(); ctx.moveTo(0, -16); ctx.lineTo(8, 0); ctx.lineTo(-8, 0); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#FFD23F"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 6, 0, 6.29); ctx.stroke();
+      ctx.restore();
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labMarbles(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("🔵 弹一颗", "amber");
+    center.appendChild(b);
+    var win = 0, shoot = 0, flash = 0, fx = 0, fy = 0;
+    b.addEventListener("click", function () {
+      shoot++;
+      if (Math.random() < 0.45) { win++; flash = 1; fx = mc.dims.w * 0.6; fy = mc.dims.h * 0.6; beep(700, 0.06, "sine", 0.05); setCaption(container, "进坑了！赢来的珠子归你——变比率强化让你想再弹一颗。"); }
+      else { setCaption(container, "擦边没进，调整角度再来。"); }
+      read.set([{ val: shoot, label: "弹了", kind: "cyan" }, { val: win, label: "赢的", kind: "good" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var gx = w * 0.6, gy = h * 0.6;
+      ctx.strokeStyle = "rgba(255,255,255,0.3)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(gx, gy, 14, 0, 6.29); ctx.stroke();
+      var cols = ["#FF2E88", "#00E5FF", "#FFD23F", "#fff"];
+      cols.forEach(function (c, i) { var a = t / 900 + i; ctx.fillStyle = c; ctx.beginPath(); ctx.arc(w * 0.3 + Math.cos(a) * 20, h * 0.6 + Math.sin(a) * 14, 7, 0, 6.29); ctx.fill(); });
+      if (flash > 0) { flash -= 0.03; ctx.strokeStyle = "rgba(0,229,160," + clamp(flash, 0, 1) + ")"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(fx, fy, 18, 0, 6.29); ctx.stroke(); }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function labPaperplane(container) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn("✈️ 掷一架", "cyan");
+    center.appendChild(b);
+    var best = 0, flying = null;
+    b.addEventListener("click", function () {
+      if (flying) return;
+      var d = Math.round(rand(3, 12) * 10) / 10; flying = { p: 0, d: d }; if (d > best) best = d;
+      beep(500, 0.05, "sine", 0.05);
+      setCaption(container, "哈口气，松手——它滑了 " + d + " 米。我造的东西会飞，成就感拉满。");
+      read.set([{ val: d + "m", label: "这架", kind: "cyan" }, { val: best + "m", label: "最远", kind: "good" }]);
+    });
+    var lp = loop(function (t) {
+      var ctx = mc.dims.ctx, w = mc.dims.w, h = mc.dims.h; ctx.clearRect(0, 0, w, h);
+      var gy = h * 0.5;
+      ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(w, gy); ctx.stroke();
+      if (flying) {
+        flying.p += 0.02; var p = flying.p;
+        var px = lerp(w * 0.1, w * 0.9, p), py = gy - Math.sin(p * Math.PI) * 60;
+        ctx.fillStyle = "#fff"; ctx.shadowColor = "#fff"; ctx.shadowBlur = 8;
+        ctx.save(); ctx.translate(px, py); ctx.rotate(-Math.sin(p * Math.PI) * 0.6);
+        ctx.beginPath(); ctx.moveTo(0, -8); ctx.lineTo(16, 0); ctx.lineTo(0, 8); ctx.lineTo(4, 0); ctx.closePath(); ctx.fill();
+        ctx.restore(); ctx.shadowBlur = 0;
+        if (p >= 1) flying = null;
+      }
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
   window.GUIDE_LABS = {
     binge: { init: labBinge },
     blindbox: { init: labBlindbox },
@@ -3322,6 +3836,186 @@
     homecook: { init: labHomecook },
     origami: { init: labOrigami },
     meditation: { init: labMeditation },
-    jigsaw: { init: labJigsaw }
+    jigsaw: { init: labJigsaw },
+
+    /* 拓展：钓鱼 / 射箭 / 室内·室外·高空·低空 */
+    fishing: { init: labFishing },
+    archery: { init: labArchery },
+    skateboard: { init: labSkateboard },
+    ski: { init: labSki },
+    surf: { init: labSurf },
+    climbing: { init: labClimbing },
+    skydive: { init: labSkydive },
+    billiards: { init: labBilliards },
+    frisbee: { init: labFrisbee },
+    camping: { init: labCamping },
+
+    /* 怀旧：上个世纪的玩法 */
+    pog: { init: labPog },
+    shuttlecock: { init: labShuttlecock },
+    rubberband: { init: labRubberband },
+    top: { init: labTop },
+    marbles: { init: labMarbles },
+    paperplane: { init: labPaperplane }
   };
+
+  /* =======================================================
+     通用实验工厂：为未单独编写实验的条目生成轻量互动
+     cfg = { emoji, btn, cls, scene, init(), play(state,b) -> {caption, readout, sound} }
+     ======================================================= */
+  function genericLab(container, cfg) {
+    var mc = makeCanvas(container);
+    var center = makeCenter(container);
+    var read = makeReadout(container);
+    var b = btn(cfg.btn || "玩一下", cfg.cls || "cyan");
+    center.appendChild(b);
+    var state = cfg.init ? cfg.init() : {};
+    b.addEventListener("click", function () {
+      var res = cfg.play(state, b);
+      if (res.caption) setCaption(container, res.caption);
+      if (res.readout) read.set(res.readout);
+      if (res.sound) beep(res.sound[0], res.sound[1], res.sound[2], res.sound[3]);
+    });
+    var lp = loop(function (t) {
+      if (cfg.draw) cfg.draw(mc.dims.ctx, mc.dims.w, mc.dims.h, t, state, b);
+      else defaultLabDraw(mc.dims.ctx, mc.dims.w, mc.dims.h, t, cfg, state);
+    });
+    lp.start();
+    return { destroy: function () { lp.stop(); if (mc.ro) mc.ro.disconnect(); } };
+  }
+
+  function defaultLabDraw(ctx, w, h, t, cfg, state) {
+    var bg = SCENE_BG[cfg.scene || "dark"] || SCENE_BG.dark;
+    var g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, bg[0]); g.addColorStop(1, bg[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    if (cfg.scene === "ground" || cfg.scene === "water") {
+      ctx.strokeStyle = "rgba(255,255,255,0.12)"; ctx.beginPath(); ctx.moveTo(0, h * 0.8); ctx.lineTo(w, h * 0.8); ctx.stroke();
+    }
+    if (cfg.scene === "water") {
+      ctx.strokeStyle = "rgba(0,229,255,0.18)"; ctx.lineWidth = 2;
+      for (var j = 0; j < 3; j++) {
+        ctx.beginPath();
+        for (var x = 0; x <= w; x += 12) { var y = h * (0.4 + j * 0.15) + Math.sin(x / 40 + t / 500 + j) * 6; if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        ctx.stroke();
+      }
+    }
+    if (cfg.scene === "night") {
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      for (var i = 0; i < 30; i++) { var sx = (i * 53) % w, sy = (i * 97) % (h * 0.6); ctx.globalAlpha = 0.3 + 0.6 * Math.abs(Math.sin(t / 700 + i)); ctx.fillRect(sx, sy, 2, 2); }
+      ctx.globalAlpha = 1;
+    }
+    var bob = Math.sin(t / 380) * 6;
+    ctx.font = "42px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(cfg.emoji || "✨", w * 0.5, h * 0.45 + bob);
+    if (cfg.decor) cfg.decor(ctx, w, h, t, state);
+  }
+
+  var SCENE_BG = {
+    sky: ["#0a1530", "#27406b"],
+    water: ["#06303f", "#04222e"],
+    ground: ["#13241a", "#1d3326"],
+    indoor: ["#1a1530", "#26204a"],
+    night: ["#070b1c", "#141d3a"],
+    dark: ["#0a0f1f", "#0f1530"]
+  };
+
+  var CFG = {
+    paragliding: { emoji: "🪂", btn: "🪂 起飞", cls: "amber", scene: "sky",
+      init: function () { return { flights: 0, best: 0 }; },
+      play: function (s) { s.flights++; var alt = Math.round(rand(800, 2500)); if (alt > s.best) s.best = alt; return { caption: "借着一阵风离地，" + alt + " 米高的安静你试过吗。", readout: [{ val: s.flights, label: "飞行", kind: "cyan" }, { val: s.best + "m", label: "最高", kind: "good" }], sound: [300, 0.08, "sine", 0.05] }; } },
+    balloon: { emoji: "🎈", btn: "🎈 点火升空", cls: "amber", scene: "sky",
+      init: function () { return { ascents: 0 }; },
+      play: function (s) { s.ascents++; return { caption: "火苗一窜，篮子缓缓离地——慢到极致的飞行最治愈。", readout: [{ val: s.ascents, label: "升空", kind: "good" }], sound: [260, 0.1, "sine", 0.05] }; } },
+    coaster: { emoji: "🎢", btn: "🎢 冲一圈", cls: "amber", scene: "ground",
+      init: function () { return { rides: 0 }; },
+      play: function (s) { s.rides++; return { caption: "爬到最高点那两秒最爽，俯冲时尖叫就完了。", readout: [{ val: s.rides, label: "圈数", kind: "good" }], sound: [880, 0.05, "square", 0.06] }; } },
+    gokart: { emoji: "🏎️", btn: "🏎️ 踩油门", cls: "cyan", scene: "ground",
+      init: function () { return { laps: 0, best: 99 }; },
+      play: function (s) { s.laps++; var tt = Math.round(rand(28, 55)); if (tt < s.best) s.best = tt; return { caption: "贴地飞行，" + tt + " 秒一圈，方向盘比人生靠谱。", readout: [{ val: s.laps, label: "圈数", kind: "cyan" }, { val: s.best + "s", label: "最快", kind: "good" }], sound: [440, 0.05, "sawtooth", 0.05] }; } },
+    kite: { emoji: "🪁", btn: "🪁 放起来", cls: "cyan", scene: "sky",
+      init: function () { return { up: 0 }; },
+      play: function (s) { s.up++; return { caption: "迎风小跑，线一绷紧它就上天了。", readout: [{ val: s.up, label: "放飞", kind: "good" }], sound: [520, 0.05, "triangle", 0.04] }; } },
+    rafting: { emoji: "🛶", btn: "🛶 划一段", cls: "cyan", scene: "water",
+      init: function () { return { runs: 0 }; },
+      play: function (s) { s.runs++; return { caption: "浪把你按进水里又抛起来，狼狈也上头。", readout: [{ val: s.runs, label: "漂程", kind: "cyan" }], sound: [360, 0.06, "sine", 0.05] }; } },
+    lego: { emoji: "🧱", btn: "🧱 拼一块", cls: "amber", scene: "indoor",
+      init: function () { return { pieces: 0, done: 0 }; },
+      play: function (s) { s.pieces += Math.round(rand(20, 200)); if (Math.random() < 0.25) s.done++; return { caption: "一块块拼上去，图纸慢慢变成实物。", readout: [{ val: s.pieces, label: "积木数", kind: "cyan" }, { val: s.done, label: "完成", kind: "good" }], sound: [700, 0.04, "square", 0.04] }; } },
+    karaoke: { emoji: "🎤", btn: "🎤 唱一首", cls: "amber", scene: "indoor",
+      init: function () { return { songs: 0 }; },
+      play: function (s) { s.songs++; var sc = Math.round(rand(70, 99)); return { caption: "关上门你是唯一主唱，这遍唱到 " + sc + " 分。", readout: [{ val: s.songs, label: "首数", kind: "cyan" }, { val: sc, label: "评分", kind: "good" }], sound: [600, 0.05, "sine", 0.05] }; } },
+    reading: { emoji: "📚", btn: "📚 翻几页", cls: "cyan", scene: "indoor",
+      init: function () { return { pages: 0 }; },
+      play: function (s) { s.pages += Math.round(rand(5, 30)); return { caption: "陷进沙发，又读了 " + s.pages + " 页。", readout: [{ val: s.pages, label: "页数", kind: "cyan" }], sound: [400, 0.04, "sine", 0.04] }; } },
+    darts: { emoji: "🎯", btn: "🎯 投一镖", cls: "amber", scene: "indoor",
+      init: function () { return { thr: 0, hit: 0 }; },
+      play: function (s) { s.thr++; var ok = Math.random() < 0.5; if (ok) s.hit++; return { caption: ok ? "扎进红心！" : "擦边，再来一镖。", readout: [{ val: s.thr, label: "出手", kind: "cyan" }, { val: s.hit, label: "命中", kind: "good" }], sound: [700, 0.05, "sine", 0.05] }; } },
+    plants: { emoji: "🪴", btn: "🪴 浇次水", cls: "cyan", scene: "indoor",
+      init: function () { return { water: 0, grow: 0 }; },
+      play: function (s) { s.water++; if (Math.random() < 0.3) s.grow++; return { caption: "少浇点，它默默长了一片新叶。", readout: [{ val: s.water, label: "浇水", kind: "cyan" }, { val: s.grow, label: "新叶", kind: "good" }], sound: [300, 0.04, "sine", 0.03] }; } },
+    picnic: { emoji: "🧺", btn: "🧺 铺开", cls: "cyan", scene: "ground",
+      init: function () { return { trips: 0 }; },
+      play: function (s) { s.trips++; return { caption: "把吃的铺在草地上，普通三明治都香了。", readout: [{ val: s.trips, label: "出摊", kind: "good" }], sound: [500, 0.05, "triangle", 0.04] }; } },
+    beach: { emoji: "🦀", btn: "🦀 翻石头", cls: "cyan", scene: "water",
+      init: function () { return { catches: 0 }; },
+      play: function (s) { s.catches++; return { caption: "退潮的滩涂是个免费盲盒，这波收获 " + s.catches + " 件。", readout: [{ val: s.catches, label: "战利品", kind: "good" }], sound: [420, 0.05, "sine", 0.04] }; } },
+    stargaze: { emoji: "🔭", btn: "🔭 看一会", cls: "cyan", scene: "night",
+      init: function () { return { seen: 0 }; },
+      play: function (s) { s.seen++; return { caption: "抬头那刻发愁的事变小了，又认出 " + s.seen + " 个星座。", readout: [{ val: s.seen, label: "星座", kind: "good" }], sound: [330, 0.05, "sine", 0.04] }; } },
+    skip: { emoji: "💧", btn: "💧 甩出去", cls: "cyan", scene: "water",
+      init: function () { return { throws: 0, best: 0, total: 0 }; },
+      play: function (s) { s.throws++; var n = Math.random() < 0.18 ? 0 : 1 + Math.floor(Math.pow(Math.random(), 1.8) * 11); s.total += n; if (n > s.best) s.best = n; var cap = n === 0 ? "直接沉了——换块更扁的石头。" : (n >= 8 ? "哗啦啦连跳 " + n + " 下！这把能吹一年。" : "在水面跳了 " + n + " 下，水花清脆。"); return { caption: cap, readout: [{ val: s.throws, label: "出手", kind: "cyan" }, { val: s.best, label: "最佳连跳", kind: "good" }], sound: [n === 0 ? 200 : 560, 0.05, "sine", 0.04] }; } },
+    walk: { emoji: "🚶", btn: "🚶 走一圈", cls: "cyan", scene: "ground",
+      init: function () { return { steps: 0, best: 0 }; },
+      play: function (s) { var st = Math.round(rand(800, 2600)); s.steps += st; if (st > s.best) s.best = st; return { caption: "绕着小区走了一圈，脑子忽然通了。", readout: [{ val: s.steps, label: "累计步数", kind: "cyan" }, { val: s.best, label: "单圈最多", kind: "good" }], sound: [400, 0.05, "sine", 0.04] }; } },
+    rope: { emoji: "🪢", btn: "🪢 跳一组", cls: "amber", scene: "indoor",
+      init: function () { return { jumps: 0, best: 0 }; },
+      play: function (s) { var j = Math.round(rand(20, 130)); s.jumps += j; if (j > s.best) s.best = j; return { caption: "绳子打地节奏一稳，连跳了 " + j + " 下没断。", readout: [{ val: s.jumps, label: "累计跳", kind: "cyan" }, { val: s.best, label: "最长连跳", kind: "good" }], sound: [520, 0.05, "triangle", 0.04] }; } },
+    tabletennis: { emoji: "🏓", btn: "🏓 打一局", cls: "amber", scene: "indoor",
+      init: function () { return { rally: 0, win: 0 }; },
+      play: function (s) { s.rally++; var w = Math.random() < 0.5; if (w) s.win++; return { caption: w ? "一拍抽杀得分！" : "搓球下网，再来一球。", readout: [{ val: s.rally, label: "回合数", kind: "cyan" }, { val: s.win, label: "得分", kind: "good" }], sound: [700, 0.05, "sine", 0.05] }; } },
+    football: { emoji: "⚽", btn: "⚽ 踢一场", cls: "cyan", scene: "ground",
+      init: function () { return { kick: 0, goals: 0 }; },
+      play: function (s) { s.kick++; var g = Math.random() < 0.3; if (g) s.goals++; return { caption: g ? "弧线球钻进死角，进了！" : "打在门将怀里，再补一脚。", readout: [{ val: s.kick, label: "出脚", kind: "cyan" }, { val: s.goals, label: "进球", kind: "good" }], sound: [440, 0.05, "sawtooth", 0.05] }; } },
+    tennis: { emoji: "🎾", btn: "🎾 挥两拍", cls: "cyan", scene: "ground",
+      init: function () { return { rally: 0, ace: 0 }; },
+      play: function (s) { s.rally++; var a = Math.random() < 0.25; if (a) s.ace++; return { caption: a ? "发球直接得分（ACE）！" : "底线对拉 5 拍，汗下来了。", readout: [{ val: s.rally, label: "对拉", kind: "cyan" }, { val: s.ace, label: "ACE", kind: "good" }], sound: [600, 0.05, "sine", 0.05] }; } },
+    hoop: { emoji: "⚪", btn: "⚪ 推一段", cls: "cyan", scene: "ground",
+      init: function () { return { dist: 0 }; },
+      play: function (s) { s.dist += Math.round(rand(20, 80)); return { caption: "铁钩一推，铁圈咕噜咕噜跟了你 " + s.dist + " 米。", readout: [{ val: s.dist + "m", label: "距离", kind: "good" }], sound: [380, 0.05, "sawtooth", 0.04] }; } },
+    hopscotch: { emoji: "⬛", btn: "⬛ 跳一轮", cls: "cyan", scene: "ground",
+      init: function () { return { rounds: 0 }; },
+      play: function (s) { s.rounds++; return { caption: "单脚跳捡瓦片，又连跳了 " + s.rounds + " 轮。", readout: [{ val: s.rounds, label: "轮", kind: "good" }], sound: [520, 0.05, "triangle", 0.04] }; } },
+    beanbag: { emoji: "🎯", btn: "🎯 躲一下", cls: "amber", scene: "ground",
+      init: function () { return { dodges: 0 }; },
+      play: function (s) { s.dodges++; return { caption: "左躲右闪，惊险躲过 " + s.dodges + " 发。", readout: [{ val: s.dodges, label: "躲过", kind: "good" }], sound: [440, 0.05, "sine", 0.04] }; } },
+    stones: { emoji: "🪨", btn: "🪨 抓一把", cls: "cyan", scene: "indoor",
+      init: function () { return { ok: 0, drop: 0 }; },
+      play: function (s) { var got = Math.random() < 0.8; if (got) s.ok++; else s.drop++; return { caption: got ? "稳稳接住，连续 " + s.ok + " 次。" : "漏了，重来。", readout: [{ val: s.ok, label: "接住", kind: "good" }, { val: s.drop, label: "掉", kind: "cyan" }], sound: [600, 0.04, "square", 0.04] }; } },
+    stringfig: { emoji: "🧵", btn: "🧵 翻一下", cls: "cyan", scene: "indoor",
+      init: function () { return { moves: 0 }; },
+      play: function (s) { s.moves++; return { caption: "十指翻绕，又变出一个花样（第 " + s.moves + " 个）。", readout: [{ val: s.moves, label: "花样", kind: "good" }], sound: [500, 0.04, "triangle", 0.04] }; } },
+    cockfight: { emoji: "🐔", btn: "🐔 顶一下", cls: "amber", scene: "ground",
+      init: function () { return { win: 0, lose: 0 }; },
+      play: function (s) { var w = Math.random() < 0.6; if (w) s.win++; else s.lose++; return { caption: w ? "膝盖一顶，对方先落地！" : "被顶倒了，换条腿再来。", readout: [{ val: s.win, label: "赢", kind: "good" }, { val: s.lose, label: "输", kind: "cyan" }], sound: [300, 0.06, "square", 0.05] }; } },
+    eaglechick: { emoji: "🐥", btn: "🐥 追一下", cls: "amber", scene: "ground",
+      init: function () { return { caught: 0, escaped: 0 }; },
+      play: function (s) { var c = Math.random() < 0.5; if (c) s.caught++; else s.escaped++; return { caption: c ? "逮到最后那只小鸡！" : "又让小鸡溜了。", readout: [{ val: s.caught, label: "抓到", kind: "good" }, { val: s.escaped, label: "逃脱", kind: "cyan" }], sound: [440, 0.05, "sine", 0.04] }; } },
+    hideseek: { emoji: "🫥", btn: "🫥 找一下", cls: "cyan", scene: "ground",
+      init: function () { return { found: 0, hidden: 0 }; },
+      play: function (s) { var f = Math.random() < 0.5; if (f) s.found++; else s.hidden++; return { caption: f ? "数到一百，把你揪出来了！" : "屏住呼吸，没被找到。", readout: [{ val: s.found, label: "找到", kind: "good" }, { val: s.hidden, label: "藏住", kind: "cyan" }], sound: [380, 0.05, "sine", 0.04] }; } },
+    cards90: { emoji: "🍜", btn: "🍜 拆一包", cls: "amber", scene: "indoor",
+      init: function () { return { packs: 0, got: 0 }; },
+      play: function (s) { s.packs++; var ng = Math.random() < 0.4; if (ng) s.got++; return { caption: ng ? "拆开干脆面先摸卡，这包抽到新卡！" : "拆开干脆面先摸卡，这包重复的。", readout: [{ val: s.packs, label: "拆包", kind: "cyan" }, { val: s.got, label: "新卡", kind: "good" }], sound: [700, 0.04, "square", 0.04] }; } },
+    comic: { emoji: "📖", btn: "📖 读一本", cls: "cyan", scene: "indoor",
+      init: function () { return { books: 0 }; },
+      play: function (s) { s.books++; return { caption: "蹲在书摊又看完一本（第 " + s.books + " 本）。", readout: [{ val: s.books, label: "本数", kind: "good" }], sound: [400, 0.04, "sine", 0.03] }; } },
+    snowball: { emoji: "❄️", btn: "❄️ 砸一发", cls: "cyan", scene: "ground",
+      init: function () { return { hit: 0, hitme: 0 }; },
+      play: function (s) { var hd = Math.random() < 0.6; if (hd) s.hit++; else s.hitme++; return { caption: hd ? "雪球正中后背！" : "被砸了，反击！", readout: [{ val: s.hit, label: "砸中", kind: "good" }, { val: s.hitme, label: "被砸", kind: "cyan" }], sound: [520, 0.05, "sine", 0.04] }; } },
+    firecracker: { emoji: "🧨", btn: "🧨 点一个", cls: "amber", scene: "ground",
+      init: function () { return { bang: 0 }; },
+      play: function (s) { s.bang++; return { caption: "点着引信撒腿跑，啪——第 " + s.bang + " 声。", readout: [{ val: s.bang, label: "响声", kind: "good" }], sound: [120, 0.08, "square", 0.07] }; } }
+  };
+  Object.keys(CFG).forEach(function (k) { window.GUIDE_LABS[k] = { init: function (c) { return genericLab(c, CFG[k]); } }; });
 })();

@@ -1,5 +1,5 @@
 /* =========================================================
-   人生浪费指南 · 应用层
+   半日闲 · 应用层
    渲染卡片 / 标签云 / 分类；实时搜索高亮；标签多选；hash 状态；
    详情弹层与实验懒挂载 / 销毁。
    全部经典脚本（无 module / 无 fetch），file:// 下完整可用。
@@ -10,6 +10,31 @@
   var ITEMS = window.GUIDE_ITEMS || [];
   var TAGS = window.GUIDE_TAGS || [];
   var LABS = window.GUIDE_LABS || {};
+  var currentItem = null; // 当前打开的条目，供分享海报使用
+
+  // 机制标签 → 好处 / 促进指标 / 提高什么的友好说明（弹窗「这项能给你什么」用）
+  // 只收「正向收益」类机制；时间黑洞 / 成瘾指数 / 沉没成本 等提醒类不在其中
+  var MECH = {
+    "多巴胺":     { desc: "快乐激素，带来即时的愉悦与行动动力", raise: "愉悦感 / 动力" },
+    "内啡肽":     { desc: "运动后的天然愉悦感，缓解不适、提升耐受", raise: "愉悦感 / 抗压" },
+    "血清素":     { desc: "情绪稳定剂，改善心情与睡眠质量", raise: "情绪稳定 / 睡眠" },
+    "副交感":     { desc: "激活放松系统，心率与皮质醇下降", raise: "放松度" },
+    "减压":       { desc: "直接拉低压力水平", raise: "抗压" },
+    "心流":       { desc: "进入专注沉浸，忘记时间与烦恼", raise: "专注力" },
+    "掌控感":     { desc: "自我效能感，觉得自己「能行」", raise: "自信" },
+    "变比率强化": { desc: "不确定的奖励最让人上头，乐于再来一次", raise: "新鲜感" },
+    "期待奖励":   { desc: "对「下一次」的期待本身就很爽", raise: "期待感" },
+    "感官奖赏":   { desc: "触觉 / 听觉 / 味觉等直接快感", raise: "感官满足" },
+    "节奏奖赏":   { desc: "稳定节奏带来舒适与掌控", raise: "节奏感" },
+    "社交":       { desc: "人与人的连接，催产素上线", raise: "社交连接" },
+    "操作性条件反射": { desc: "动作→反馈循环，越做越顺手", raise: "熟练度" },
+    "近因效应":   { desc: "最近一次成功最难忘，推着你继续", raise: "动力" },
+    "视角重置":   { desc: "拉远看问题，焦虑被稀释", raise: "豁达度" },
+    "叙事传输":   { desc: "代入故事，暂时逃离现实", raise: "共情 / 抽离" },
+    "糖脂协同":   { desc: "糖 + 脂肪双重刺激奖励中枢", raise: "满足感" },
+    "蔡格尼克效应": { desc: "未完成的情节最让人惦记，欲罢不能", raise: "投入度" },
+    "怀旧":       { desc: "熟悉的老玩法带来安全感与温暖", raise: "归属感" }
+  };
 
   var CAT_LABEL = { fun: "好玩", food: "好吃" };
 
@@ -307,7 +332,7 @@
   }
 
   /* =========================================================
-     今日盲盒 · 躺平抽签机
+     今日盲盒 · 闲趣抽签机
      以「日期」为种子抽一个条目：同一天结果稳定，零点自动换新；
      未开盒时是一个晃动的礼物盒，点击后有开盒动画，不喜欢可「换一个」。
      ========================================================= */
@@ -315,11 +340,11 @@
     "盲盒卖的是不确定性——开盒前那两秒最上头。",
     "不知道里面是什么，才是快乐的来源。",
     "变比率强化：下一个说不定更爽。",
-    "抽到什么算什么，反正都是躺平。",
+    "抽到什么算什么，反正都是闲着。",
     "今天也要好好浪费时间呀。"
   ];
   var LUCKY_FORTUNES = [
-    "今日宜躺平，忌加班。",
+    "今日宜偷闲，忌加班。",
     "抽中这条，说明宇宙让你歇会儿。",
     "别问为什么，问就是命中注定。",
     "今日运势：多巴胺在线，烦恼离线。",
@@ -354,7 +379,7 @@
   }
   // 今日主推：由日期决定，同一天永远是同一个
   function dailyItem() {
-    return ITEMS[hashSeed(dayKey() + "|lying-flat") % ITEMS.length];
+    return ITEMS[hashSeed(dayKey() + "|banrixian") % ITEMS.length];
   }
   // 换一个：随机挑一个今天没抽过的；全抽完则重新洗牌
   function nextItem() {
@@ -702,7 +727,7 @@
         meter("💜 内啡肽指数", job.score.endorphin, " endorphin") + "</div>" +
       '<div class="jd-row"><span class="jd-key">高光时刻</span><div class="jd-wins">' + peaks + "</div></div>" +
       '<div class="jd-row"><span class="jd-key">爽点机制</span><div class="jd-tags">' + tags + "</div></div>" +
-      '<div class="jd-hint">点机制标签可回看「同机制」的颓废条目 →</div>';
+      '<div class="jd-hint">点机制标签可回看「同机制」的闲趣条目 →</div>';
   }
 
   /* ---------- 热力表 ---------- */
@@ -894,8 +919,141 @@
   }
 
   /* ---------- 详情弹层 ---------- */
+  // 弹窗「📈 这项能给你什么」：把条目的机制标签翻译成好处 / 促进指标 / 提高什么
+  function renderBenefit(item) {
+    var box = $("modal-benefit");
+    if (!box) return;
+    var keys = (item.tags || []).filter(function (t) { return MECH[t]; });
+    if (!keys.length) { box.hidden = true; box.innerHTML = ""; return; }
+    var raise = [];
+    var rows = keys.map(function (t) {
+      var m = MECH[t];
+      if (m.raise && raise.indexOf(m.raise) < 0) raise.push(m.raise);
+      return "<li><b>" + escapeHtml(t) + "</b>：" + escapeHtml(m.desc) + "</li>";
+    }).join("");
+    var promote = keys.map(escapeHtml).join(" · ");
+    var raiseLine = raise.length ? '<div class="bn-raise">常提高：' + raise.map(escapeHtml).join(" · ") + "</div>" : "";
+    box.hidden = false;
+    box.innerHTML =
+      '<div class="bn-head">📈 这项能给你什么</div>' +
+      '<div class="bn-promote">促进指标：' + promote + "</div>" +
+      raiseLine +
+      '<ul class="bn-list">' + rows + "</ul>";
+  }
+
+  // 由条目机制标签推断最适合的摸鱼人格
+  function personaKeyFor(item) {
+    var t = item.tags || []; function h(n) { return t.indexOf(n) >= 0; }
+    if (h("催产素") || h("副交感") || h("减压")) return "he";
+    if (h("糖脂协同") || h("美拉德反应")) return "fo";
+    if (h("社交")) return "so";
+    if (h("血清素") || h("内啡肽")) return "mi";
+    if (h("变比率强化") || h("收集欲") || h("期待奖励")) return "co";
+    if (h("心流")) return "fl";
+    if (h("掌控感")) return "ct";
+    if (h("蔡格尼克效应") || h("时间黑洞")) return "ge";
+    if (h("肾上腺素") || h("良性自虐") || h("嗅觉悖论")) return "qu";
+    if (h("多巴胺")) return "fo";
+    return "he";
+  }
+  function personaName(item) {
+    var k = personaKeyFor(item);
+    var T = window.GUIDE_PERSONA && window.GUIDE_PERSONA.TYPES;
+    return (T && T[k] && T[k].name) ? T[k].name : "治愈躺平型";
+  }
+  function playFor(item) {
+    var t = item.tags || []; function h(n) { return t.indexOf(n) >= 0; }
+    if (h("社交")) return "喊上搭子，开一局，输赢都是快乐";
+    if (h("糖脂协同") || h("美拉德反应")) return "趁热下嘴，香味不等人";
+    if (h("催产素") || h("副交感") || h("减压")) return "上手就好，让它替你回血";
+    if (h("内啡肽") || h("心流")) return "换上装备，动起来就对了";
+    if (h("变比率强化") || h("期待奖励")) return "开之前先吸口气，最爽的是期待";
+    if (h("蔡格尼克效应") || h("时间黑洞")) return "记得设个闹钟，不然天亮了";
+    if (h("掌控感")) return "按你的节奏，越顺手越上头";
+    if (h("血清素")) return "走个仪式，把脑子调成静音";
+    if (h("感官奖赏")) return "慢点感受，别急着结束";
+    if (h("多巴胺")) return "打开就玩，别想太多";
+    return "点开卡片，照着互动小实验玩一遍";
+  }
+  function jokeFor(item) {
+    if (item.cat === "food") return "热量正在赶来的路上，请系好安全带。";
+    var t = item.tags || []; function h(n) { return t.indexOf(n) >= 0; }
+    if (h("时间黑洞") || h("蔡格尼克效应")) return "本活动已通过「不务正业」认证，请放心沉迷。";
+    if (h("催产素") || h("副交感") || h("减压")) return "它不回你消息，但会用一生治愈你。";
+    if (h("内啡肽")) return "动完这趟，今天的 KPI 就算你达标了。";
+    if (h("社交")) return "人一多，快乐自动凑单。";
+    if (h("变比率强化") || h("期待奖励")) return "中奖概率由玄学赞助，心情由你包邮。";
+    if (h("多巴胺")) return "大脑说不要，手说拿来。";
+    return "认真虚度，是一种被严重低估的能力。";
+  }
+  function principleOf(item) {
+    var w = item.why || "";
+    if (item.cat === "food") {
+      // 美食显示前两段，更饱满
+      var parts = w.split("。");
+      var s = (parts[0] || "") + (parts[1] ? "。" + parts[1] : "");
+      if (s.length > 96) s = s.slice(0, 96) + "…";
+      return s;
+    }
+    var idx = w.indexOf("。");
+    var s2 = idx > 0 ? w.slice(0, idx) : w;
+    if (s2.length > 50) s2 = s2.slice(0, 50) + "…";
+    return s2;
+  }
+  function principleLabel(item) { return item.cat === "food" ? "🍜 好吃在哪" : "🧩 上头原理"; }
+  function foodMore(item) {
+    var M = {
+      milktea: "加料是灵魂：珍珠、芋圆、椰果随便堆。别信「三分糖」——一杯下肚仍顶一碗饭的热量，配炸鸡快乐直接翻倍。",
+      luosifen: "标配炸蛋鸭脚，吸满汤底才够味。闻着臭别慌，多闻几下大脑就「适应」了；怕辣配冰豆奶，香辣一次拉满。",
+      noodle: "料包是本体，加个蛋、添根肠立刻升级成豪华版。深夜来一碗，高盐高油是安慰，也是明天秤上的债。",
+      fried: "去皮能省一半热量——但没人这么干。刚出锅趁热吃，咔嚓声才是灵魂；配冰啤或气泡水，油腻感瞬间被冲淡。",
+      hotpot: "辣度自己定，怕辣直接点鸳鸯锅。越煮越上头，辣到顶不住时，一杯奶茶比白水更解辣。",
+      dessert: "黑巧比奶油蛋糕友好一点，但都是糖。最佳吃法是饭后浅尝一口，空腹开吃易被血糖逼着「再来一块」。",
+      homecook: "从一道番茄炒蛋开始，别一上来挑战佛跳墙。切菜、颠勺、尝咸淡，一下午的节奏全在你手里。",
+      coffee: "豆水比 1:15、水温 90℃ 是起点，画圈注水最解压。别用沸水冲细粉，第一杯留给自己，别急着外卖。"
+    };
+    return M[item.id] || "";
+  }
+  function almanacFor(item) {
+    if (item.cat === "food") return "今日宜：放纵味蕾　不宜：计算热量";
+    var t = item.tags || []; function h(n) { return t.indexOf(n) >= 0; }
+    if (h("副交感") || h("减压") || h("催产素")) return "今日宜：瘫着回血　不宜：卷自己";
+    if (h("内啡肽")) return "今日宜：动一动　不宜：久坐不动";
+    if (h("社交")) return "今日宜：找搭子　不宜：独自内耗";
+    if (h("时间黑洞") || h("蔡格尼克效应")) return "今日宜：续命熬夜　不宜：早睡（开玩笑）";
+    if (h("心流") || h("掌控感")) return "今日宜：沉浸造物　不宜：被打断";
+    return "今日宜：虚度光阴　不宜：努力";
+  }
+  window.BX_HELPERS = { personaName: personaName, playFor: playFor, jokeFor: jokeFor, principleOf: principleOf, almanacFor: almanacFor, principleLabel: principleLabel, foodMore: foodMore };
+
+  // 点击「分享海报」：用当前条目拼内容，调用 GUIDE_POSTER 弹预览层
+  function shareItem(item) {
+    var d = dopaOf(item.id);
+    var e = (window.GUIDE_ENDORPHIN && window.GUIDE_ENDORPHIN[item.id]) || 0;
+    if (window.GUIDE_POSTER && window.GUIDE_POSTER.open) {
+      window.GUIDE_POSTER.open({
+        kicker: "半日闲 · 慢生活研究所",
+        emoji: item.emoji,
+        title: item.name,
+        sub: item.hook,
+        dopa: d, endo: e,
+        persona: personaName(item),
+        play: playFor(item),
+        joke: jokeFor(item),
+        principle: principleOf(item),
+        principleLabel: principleLabel(item),
+        food: foodMore(item),
+        almanac: almanacFor(item),
+        ambEmoji: item.emoji,
+        tags: item.tags.slice(0, 5),
+        footer: "点开就玩它的互动小实验 · 零依赖纯静态"
+      });
+    }
+  }
+
   function openModal(item) {
     destroyLab();
+    currentItem = item;
     $("modal-emoji").textContent = item.emoji;
     var catEl = $("modal-cat");
     catEl.className = "modal-cat " + item.cat;
@@ -919,6 +1077,8 @@
       s.textContent = "#" + t;
       tagsBox.appendChild(s);
     });
+    // 好处 / 促进指标
+    renderBenefit(item);
     // 成本 / 门槛 / 耗时 元信息
     renderModalMeta(item);
     // 「怎么玩」教学清单（含受众专属路径）
@@ -949,7 +1109,15 @@
     if (activeLab && activeLab.destroy) { try { activeLab.destroy(); } catch (e) {} }
     activeLab = null;
     var stage = $("lab-stage");
-    if (stage) stage.innerHTML = "";
+    if (stage) {
+      stage.innerHTML = "";
+      // 按钮 / 读数层现在位于实验框外，需单独清理，避免残留叠加
+      var host = stage.parentElement;
+      if (host) {
+        var olds = host.querySelectorAll(".lab-center, .lab-readout");
+        for (var i = olds.length - 1; i >= 0; i--) olds[i].parentNode.removeChild(olds[i]);
+      }
+    }
   }
 
   // 弹窗元信息：耗时 / 成本 / 门槛 / 受众
@@ -989,11 +1157,13 @@
     var tip = (aud === "busy" && h.busyTip) ? h.busyTip
       : (aud === "bored" && h.boredTip) ? h.boredTip
       : h.tip;
+    var rules = (window.GUIDE_RULES && window.GUIDE_RULES[item.id]) || h.rules || "";
     box.innerHTML =
       '<div class="how-head">📋 怎么玩' + (audNote ? ' <span class="how-aud">' + escapeHtml(audNote) + "</span>" : "") + "</div>" +
       needHtml +
       '<ol class="how-steps">' + stepsHtml + "</ol>" +
       (tip ? '<div class="how-tip">💡 ' + escapeHtml(tip) + "</div>" : "") +
+      (rules ? '<div class="how-rules">📜 <b>规则：</b>' + escapeHtml(rules) + "</div>" : "") +
       '<button class="save-todo" id="save-todo" type="button"></button>';
     Array.prototype.forEach.call(box.querySelectorAll(".how-step input"), function (cb) {
       cb.addEventListener("change", function () {
@@ -1212,6 +1382,7 @@
     mountJobs();
     mountPersona();
     mountCarousel();
+    $("modal-share").addEventListener("click", function () { if (currentItem) shareItem(currentItem); });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
