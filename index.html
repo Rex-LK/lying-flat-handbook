@@ -56,20 +56,22 @@
 
     <!-- 今日盲盒 + 摸鱼人格：合并卡片，圆形切换 -->
     <section class="duo" id="duo">
-      <div class="duo-switch" role="tablist" aria-label="今日盲盒与摸鱼人格切换">
-        <button class="duo-btn is-active" type="button" role="tab" aria-selected="true" data-duo="lucky">
-          <span class="duo-ico">🎁</span><span class="duo-txt">今日盲盒</span>
-        </button>
-        <button class="duo-btn" type="button" role="tab" aria-selected="false" data-duo="persona">
-          <span class="duo-ico">🧭</span><span class="duo-txt">摸鱼人格</span>
-        </button>
-      </div>
+      <div class="duo-head">
+        <div class="duo-switch" role="tablist" aria-label="今日盲盒与摸鱼人格切换">
+          <button class="duo-btn is-active" type="button" role="tab" aria-selected="true" data-duo="lucky">
+            <span class="duo-ico">🎁</span><span class="duo-txt">今日盲盒</span>
+          </button>
+          <button class="duo-btn" type="button" role="tab" aria-selected="false" data-duo="persona">
+            <span class="duo-ico">🧭</span><span class="duo-txt">摸鱼人格</span>
+          </button>
+        </div>
 
-      <div class="jobs-clock" id="jobs-clock" role="button" tabindex="0" title="点击跳到下方「此刻最爽」的时间">
-        <span class="clock-label">此刻 <b id="clock-now">--:--</b> 最爽的是</span>
-        <span class="clock-job" id="clock-job">—</span>
-        <span class="clock-desc" id="clock-desc"></span>
-        <span class="clock-go">你是哪个职业？点进来看看你的最爽时刻 →</span>
+        <div class="jobs-clock" id="jobs-clock" role="button" tabindex="0" title="点击跳到下方「此刻最爽」的时间">
+          <span class="clock-label">此刻 <b id="clock-now">--:--</b> 最爽的是</span>
+          <span class="clock-job" id="clock-job">—</span>
+          <span class="clock-desc" id="clock-desc"></span>
+          <span class="clock-go">你是哪个职业？点进来看看你的最爽时刻 →</span>
+        </div>
       </div>
 
       <div class="duo-panels">

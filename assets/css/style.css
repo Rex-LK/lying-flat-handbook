@@ -566,16 +566,26 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
 .duo-panel .lucky-head, .duo-panel .persona-head { text-align: center; margin-bottom: 20px; }
 .duo-panel .lucky-sub, .duo-panel .persona-sub { margin-left: auto; margin-right: auto; }
 .duo-panel .persona-box { max-width: 100%; }
-/* 从职业区移入 duo 的「此刻最爽」条：宽屏浮在卡片右上角 */
-.duo .jobs-clock {
-  position: absolute; top: 18px; right: 18px; z-index: 3;
+/* 从职业区移入 duo 的「此刻最爽」条：与切换器同一行，切换器居中、卡片靠右 */
+.duo-head {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px;
+}
+.duo-head .duo-switch { grid-column: 2; margin: 0 auto; }
+.duo-head .jobs-clock {
+  grid-column: 3; justify-self: end;
+  position: static; z-index: 3;
   flex: none; width: auto; max-width: 340px;
   margin: 0; align-items: flex-start; text-align: left;
 }
-/* 中窄屏：不再浮层，落回切换器下方居中，避免与面板内容重叠 */
+/* 中窄屏：单列堆叠，切换器居中、卡片落回其下方居中，不再重叠 */
 @media (max-width: 900px) {
-  .duo .jobs-clock { position: static; max-width: 520px; margin: 0 auto 18px; align-items: center; text-align: center; }
-  .duo-panels { margin-top: 0; }
+  .duo-head { grid-template-columns: 1fr; }
+  .duo-head .duo-switch { grid-column: 1; }
+  .duo-head .jobs-clock {
+    grid-column: 1; justify-self: center;
+    max-width: 520px; margin: 16px auto 0; align-items: center; text-align: center;
+  }
+  .duo-panels { margin-top: 18px; }
 }
 @media (max-width: 820px) {
   .duo { padding: 20px 16px 24px; border-radius: 26px; }
