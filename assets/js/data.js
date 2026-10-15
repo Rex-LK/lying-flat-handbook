@@ -1104,6 +1104,98 @@ window.GUIDE_ITEMS = [
     why: "放鞭炮是浓缩的感官奖赏：引信嗤嗤的期待、炸响瞬间的惊与爽，是变比率强化里最响的一下。它只在过年出现，所以那一声炮响，是童年关于年最具体的记忆。",
     tags: ["怀旧", "室外", "感官奖赏", "多巴胺"],
     lab: "firecracker"
+  },
+
+  /* ---------------- 民族 & 乡村（少数民族闲趣 + 贵州村 BA / 村超） ---------------- */
+  {
+    id: "pohshui",
+    cat: "fun",
+    name: "泼水节",
+    emoji: "💦",
+    hook: "互相泼的那一刻，陌生人也能笑成一片。",
+    why: "泼水节把「被水淋」这种日常嫌弃，翻转成祝福和社交邀请——你泼我、我泼你，身体接触 + 清凉感官奖赏 + 群体狂欢，多巴胺和催产素一起涌。水的不可控带来变比率强化的小惊喜，谁被泼最惨谁笑得最大声。",
+    tags: ["社交", "感官奖赏", "多巴胺", "变比率强化"],
+    lab: "pohshui"
+  },
+  {
+    id: "firefest",
+    cat: "fun",
+    name: "火把节",
+    emoji: "🔥",
+    hook: "举着火把绕场跑，凉夜一下子就热了。",
+    why: "火把节是社群的「集体心流」：火光、鼓点、人群把个体情绪同步成一股暖流，多巴胺随跳跃释放，归属感和仪式感（催产素 / 血清素）把孤单稀释。围着火堆，谁都不是局外人。",
+    tags: ["社交", "多巴胺", "社群仪式", "血清素"],
+    lab: "firefest"
+  },
+  {
+    id: "zaran",
+    cat: "fun",
+    name: "扎染",
+    emoji: "🌀",
+    hook: "拆开皮筋那下，蓝白花纹像开盲盒。",
+    why: "扎染是手工版的开盲盒：捆扎时你并不知道最终纹样，拆线的瞬间变比率强化给一次小惊喜；而一针一线、浸染、氧化变蓝的过程，是慢节奏的手工心流，掌控感随每一块成品累积。",
+    tags: ["心流", "掌控感", "多巴胺", "变比率强化"],
+    lab: "zaran"
+  },
+  {
+    id: "tangka",
+    cat: "fun",
+    name: "唐卡",
+    emoji: "🖼️",
+    hook: "一笔一笔，把心描静了。",
+    why: "唐卡是「画出来的冥想」：极细的笔触要求你屏息、专注，注意力高度集中却毫不费力，是典型的减压心流；矿物颜料慢慢堆叠出庄严，副交感接管，皮质醇被一笔笔写掉。",
+    tags: ["心流", "减压", "副交感", "掌控感"],
+    lab: "tangka"
+  },
+  {
+    id: "shange",
+    cat: "fun",
+    name: "山歌对唱",
+    emoji: "🎙️",
+    hook: "你一句我一句，词儿现编现接。",
+    why: "山歌对唱是即时的语言心流 + 社交：押韵、接梗要在半秒里蹦出来，每次妙接都是一次多巴胺小脉冲；和人对唱的默契，催产素把距离拉近。哪怕跑调，热闹本身就把尴尬冲没了。",
+    tags: ["社交", "创作", "多巴胺", "心流"],
+    lab: "shange"
+  },
+  {
+    id: "naadam",
+    cat: "fun",
+    name: "那达慕",
+    emoji: "🐎",
+    hook: "摔跤、赛马、射箭，草原上的三项全能。",
+    why: "那达慕把竞技、族群聚会和马背浪漫打包：看摔跤的近身博弈（掌控感 + 多巴胺）、赛马的疾风（内啡肽 + 肾上腺素）、射箭的稳住（心流），置身人群的欢呼里是强社交绑定。参与或围观都上头。",
+    tags: ["运动", "社交", "掌控感", "多巴胺", "内啡肽"],
+    lab: "naadam"
+  },
+  {
+    id: "dongsong",
+    cat: "fun",
+    name: "侗族大歌",
+    emoji: "🎶",
+    hook: "多声部一响，整个人被声音托起来。",
+    why: "侗族大歌是无指挥的多声部合唱，每个人的声部既独立又咬合，这种「共同完成」的协作心流极上头；低频共鸣震动胸腔，内啡肽和血清素随和声缓缓上涨，群体的声音把孤独熨平。",
+    tags: ["社交", "心流", "内啡肽", "血清素"],
+    lab: "dongsong"
+  },
+  {
+    id: "cunba",
+    cat: "fun",
+    name: "村BA",
+    emoji: "🏀",
+    hook: "村口球场，观众比球员还上头。",
+    why: "村BA 把篮球从职业赛拉回烟火气：不分明星全是熟人，进球后的全村欢呼是强社交绑定 + 多巴胺峰值；比分你永远猜不准下一球归谁，变比率强化让你一局接一局不肯走。",
+    tags: ["运动", "社交", "多巴胺", "变比率强化"],
+    lab: "cunba"
+  },
+  {
+    id: "cunchao",
+    cat: "fun",
+    name: "村超",
+    emoji: "⚽",
+    hook: "草根球队，踢出全村的骄傲。",
+    why: "村超是足球版的村BA：村民自发组队，看台上是乡亲的呐喊，进球的狂喜是内啡肽 + 多巴胺双重暴击；归属感把一场普通比赛变成「我们村的事」，社交奖赏比技术更动人。",
+    tags: ["运动", "社交", "内啡肽", "多巴胺"],
+    lab: "cunchao"
   }
 ];
 
@@ -1174,7 +1266,8 @@ window.GUIDE_DOPAMINE = {
   pog: 88, shuttlecock: 70, rubberband: 65, top: 72, marbles: 85, paperplane: 68,
   hoop: 60, hopscotch: 62, beanbag: 75, stones: 66, stringfig: 64, cockfight: 78,
   eaglechick: 70, hideseek: 76, cards90: 90, comic: 72, snowball: 80, firecracker: 84,
-  tea: 40, baking: 72, gardening: 60, photography: 70, painting: 68, calligraphy: 55, pottery: 70, dancing: 75, guitar: 72, chess: 66, jogging: 55, bowling: 70, stamp: 65, juggling: 64
+  tea: 40, baking: 72, gardening: 60, photography: 70, painting: 68, calligraphy: 55, pottery: 70, dancing: 75, guitar: 72, chess: 66, jogging: 55, bowling: 70, stamp: 65, juggling: 64,
+  pohshui: 75, firefest: 78, zaran: 60, tangka: 55, shange: 70, naadam: 72, dongsong: 65, cunba: 85, cunchao: 82
 };
 
 /* 内啡肽指数（0-100）：分泌内啡肽的强度，越高越「爽/痛后快感」
@@ -1299,7 +1392,8 @@ window.GUIDE_GENRES = {
   pog: "怀旧", shuttlecock: "怀旧", rubberband: "怀旧", top: "怀旧", marbles: "怀旧", paperplane: "怀旧",
   hoop: "怀旧", hopscotch: "怀旧", beanbag: "怀旧", stones: "怀旧", stringfig: "怀旧", cockfight: "怀旧",
   eaglechick: "怀旧", hideseek: "怀旧", cards90: "怀旧", comic: "怀旧", snowball: "怀旧", firecracker: "怀旧",
-  tea: "饮品", baking: "美食", gardening: "园艺", photography: "摄影", painting: "艺术", calligraphy: "艺术", pottery: "手工", dancing: "运动", guitar: "音乐", chess: "桌游", jogging: "运动", bowling: "运动", stamp: "收集", juggling: "运动"
+  tea: "饮品", baking: "美食", gardening: "园艺", photography: "摄影", painting: "艺术", calligraphy: "艺术", pottery: "手工", dancing: "运动", guitar: "音乐", chess: "桌游", jogging: "运动", bowling: "运动", stamp: "收集", juggling: "运动",
+  pohshui: "节庆", firefest: "节庆", zaran: "手工", tangka: "艺术", shange: "音乐", naadam: "运动", dongsong: "音乐", cunba: "运动", cunchao: "运动"
 };
 
 /* =========================================================
@@ -1332,7 +1426,8 @@ window.GUIDE_AUDIENCE = {
   stringfig: "both", comic: "both",
   marbles: "bored", hopscotch: "bored", beanbag: "bored", stones: "bored", cockfight: "bored",
   eaglechick: "bored", hideseek: "bored", cards90: "bored", snowball: "bored", firecracker: "bored",
-  tea: "both", baking: "both", gardening: "both", photography: "both", painting: "both", calligraphy: "both", pottery: "both", dancing: "both", guitar: "both", chess: "both", jogging: "busy", bowling: "both", stamp: "both", juggling: "both"
+  tea: "both", baking: "both", gardening: "both", photography: "both", painting: "both", calligraphy: "both", pottery: "both", dancing: "both", guitar: "both", chess: "both", jogging: "busy", bowling: "both", stamp: "both", juggling: "both",
+  pohshui: "both", firefest: "both", zaran: "both", tangka: "both", shange: "both", naadam: "busy", dongsong: "both", cunba: "busy", cunchao: "busy"
 };
 
 window.GUIDE_DURATION = {
@@ -1351,7 +1446,8 @@ window.GUIDE_DURATION = {
   pog: 45, shuttlecock: 30, rubberband: 30, top: 40, marbles: 40, paperplane: 20,
   hoop: 40, hopscotch: 30, beanbag: 45, stones: 25, stringfig: 30, cockfight: 20,
   eaglechick: 30, hideseek: 40, cards90: 15, comic: 60, snowball: 60, firecracker: 20,
-  tea: 15, baking: 60, gardening: 45, photography: 40, painting: 60, calligraphy: 30, pottery: 60, dancing: 45, guitar: 30, chess: 40, jogging: 30, bowling: 45, stamp: 20, juggling: 20
+  tea: 15, baking: 60, gardening: 45, photography: 40, painting: 60, calligraphy: 30, pottery: 60, dancing: 45, guitar: 30, chess: 40, jogging: 30, bowling: 45, stamp: 20, juggling: 20,
+  pohshui: 60, firefest: 120, zaran: 90, tangka: 120, shange: 40, naadam: 180, dongsong: 60, cunba: 90, cunchao: 90
 };
 
 /* =========================================================
@@ -1374,7 +1470,8 @@ window.GUIDE_COST = {
   pog: 0, shuttlecock: 0, rubberband: 0, top: 1, marbles: 0, paperplane: 0,
   hoop: 1, hopscotch: 0, beanbag: 0, stones: 0, stringfig: 0, cockfight: 0,
   eaglechick: 0, hideseek: 0, cards90: 1, comic: 1, snowball: 0, firecracker: 1,
-  tea: 1, baking: 1, gardening: 1, photography: 1, painting: 1, calligraphy: 0, pottery: 1, dancing: 0, guitar: 1, chess: 0, jogging: 0, bowling: 1, stamp: 1, juggling: 0
+  tea: 1, baking: 1, gardening: 1, photography: 1, painting: 1, calligraphy: 0, pottery: 1, dancing: 0, guitar: 1, chess: 0, jogging: 0, bowling: 1, stamp: 1, juggling: 0,
+  pohshui: 0, firefest: 0, zaran: 1, tangka: 1, shange: 0, naadam: 0, dongsong: 0, cunba: 0, cunchao: 0
 };
 
 window.GUIDE_LEVEL = {
@@ -1391,7 +1488,8 @@ window.GUIDE_LEVEL = {
   pog: 0, shuttlecock: 0, rubberband: 0, top: 1, marbles: 0, paperplane: 0,
   hoop: 0, hopscotch: 0, beanbag: 0, stones: 0, stringfig: 0, cockfight: 0,
   eaglechick: 0, hideseek: 0, cards90: 0, comic: 0, snowball: 0, firecracker: 0,
-  tea: 0, baking: 1, gardening: 0, photography: 0, painting: 0, calligraphy: 0, pottery: 1, dancing: 0, guitar: 1, chess: 1, jogging: 0, bowling: 0, stamp: 0, juggling: 1
+  tea: 0, baking: 1, gardening: 0, photography: 0, painting: 0, calligraphy: 0, pottery: 1, dancing: 0, guitar: 1, chess: 1, jogging: 0, bowling: 0, stamp: 0, juggling: 1,
+  pohshui: 0, firefest: 0, zaran: 0, tangka: 1, shange: 0, naadam: 0, dongsong: 0, cunba: 0, cunchao: 0
 };
 
 /* =========================================================
@@ -1521,294 +1619,55 @@ window.GUIDE_HOW = {
   };
 
 /* =========================================================
-   职业爽感时刻表 —— 哪些职业在什么时候能发挥最大爽感
-   契约（app.js 职业模块唯一依赖）：
-   {
-     id:     唯一标识
-     emoji:  职业图标
-     name:   职业名
-     field:  领域（用于领域筛选）
-     peak:   主爽点时刻文案，如 "23:00–02:00"
-     moment: 一句画面感爽点
-     why:    「爽在哪」科普正文（机制名会被 app.js 高亮）
-     tags:   机制标签（沿用条目词表，可反向筛选条目）
-     score:  { dopamine, endorphin } 两个指数（0-100）
-     peaks:  爽感时段窗口 [{ from: 23, to: 2, heat: 96 }]，支持跨零点
-             from/to 为 0-23 的整点边界，heat 为该时段的爽感强度
-   }
+   最佳时段 —— 哪个项目在哪些时间段进行最爽
+   与 GUIDE_ITEMS 通过 id 关联：
+   id -> 一个或多个时段键（可叠加，越靠前越推荐）：
+     dawn    清晨 05:00–09:00   空气好、人少、适合清醒专注或出门
+     morning 上午 09:00–12:00   精力在线、适合动手 / 学习 / 轻运动
+     noon    午后 12:00–17:00   大块时间、午休与下午茶、适合长活动
+     evening 傍晚 17:00–19:00   下班放学、适合运动 / 散步 / 放松
+     night   夜晚 19:00–23:00   社交 / 聚会 / 屏幕 / 观赛、最适合聚在一起
+     late    深夜 23:00–05:00   独处、安静、屏幕与星空
+   契约（app.js 时段模块唯一依赖）：window.GUIDE_TIMES[id] = [时段键...]
    ========================================================= */
-window.GUIDE_JOBS = [
-  /* ---------------- 技术派 ---------------- */
-  {
-    id: "coder",
-    emoji: "💻",
-    name: "程序员",
-    field: "技术派",
-    peak: "23:00–02:00",
-    moment: "凌晨一点十七分，绿色的 PASS 终于刷满整屏。",
-    why: "深夜没人打扰，消息不再切断注意力的连续体——这是心流最便宜的入场券。报错被逐个消灭、测试由红转绿，每一次修复都是一次即时到账的掌控感。而多巴胺其实更早登场：在你笃定「我大概知道怎么改」的预判瞬间就已经先付了款，所以等到真跑通那一刻，反而是一种安静的满足。",
-    tags: ["心流", "掌控感", "多巴胺"],
-    score: { dopamine: 82, endorphin: 30 },
-    peaks: [{ from: 23, to: 2, heat: 96 }]
-  },
-  {
-    id: "analyst",
-    emoji: "📊",
-    name: "数据分析师",
-    field: "技术派",
-    peak: "14:00–17:00",
-    moment: "下午三点半，那行 p 值终于小于 0.05。",
-    why: "跑数前的漫长等待，是蔡格尼克效应布下的钩子：未完成的悬置最磨人，也最让人惦记。结果一旦跳出来，无论好坏都是一次期待奖励的兑现；猜想被数据证实的那一刻，多巴胺替你的判断力盖了章；而把一堆杂乱数据驯服成一张能讲故事的图，本身就把掌控感拉满——你替混乱的世界做了一次主。",
-    tags: ["期待奖励", "蔡格尼克效应", "掌控感", "多巴胺"],
-    score: { dopamine: 76, endorphin: 32 },
-    peaks: [{ from: 14, to: 17, heat: 88 }]
-  },
-
-  /* ---------------- 创意派 ---------------- */
-  {
-    id: "designer",
-    emoji: "🎨",
-    name: "设计师",
-    field: "创意派",
-    peak: "22:00–01:00",
-    moment: "甲方睡了，画布终于没人指手画脚。",
-    why: "白天的修改意见会不断打断心流所需的连续性，等外界安静下来，视觉与操作之间才重新形成毫秒级的闭环。自己给自己定标准的那一刻，掌控感回到手上；而当配色、留白与节奏终于对齐，眼睛往往比大脑先一步领到感官奖赏。",
-    tags: ["心流", "掌控感", "感官奖赏"],
-    score: { dopamine: 74, endorphin: 34 },
-    peaks: [{ from: 22, to: 1, heat: 92 }]
-  },
-  {
-    id: "musician",
-    emoji: "🎵",
-    name: "独立音乐人",
-    field: "创意派",
-    peak: "01:00–03:00",
-    moment: "凌晨两点，一段旋律在第三次循环里突然对了。",
-    why: "创作最上头的，是「终于对上了」那一瞬：脑海里预演的声响与现实重合，多巴胺立刻补票。反复试奏让身体记忆接管，人滑进心流，呼吸跟着节拍一起慢下来；而低频的压迫感与泛音的空气感，是语言解释不清、身体却秒懂的感官奖赏。",
-    tags: ["多巴胺", "心流", "感官奖赏"],
-    score: { dopamine: 80, endorphin: 40 },
-    peaks: [{ from: 1, to: 3, heat: 90 }]
-  },
-  {
-    id: "photographer",
-    emoji: "📷",
-    name: "摄影师",
-    field: "创意派",
-    peak: "05:00–07:00",
-    moment: "日出前最后两分钟，云层突然被撕开一道口子。",
-    why: "蹲守一整个清晨只为一张片子，是典型的期待奖励：等待越久，兑现时越猛。光线、构图与时机三点一线时，你把不可控的世界按进了一个可控的方框，掌控感由此而生；而日出那半分钟的天色骤变，是眼睛能领到的纯度最高的感官奖赏。",
-    tags: ["期待奖励", "掌控感", "感官奖赏"],
-    score: { dopamine: 78, endorphin: 36 },
-    peaks: [{ from: 5, to: 7, heat: 93 }, { from: 16, to: 18, heat: 70 }]
-  },
-
-  /* ---------------- 现场派 ---------------- */
-  {
-    id: "chef",
-    emoji: "👨‍🍳",
-    name: "厨师",
-    field: "现场派",
-    peak: "12:00–13:30",
-    moment: "午市最爆的那四十分钟，锅起火落，出餐像流水。",
-    why: "高峰期的后厨是被压缩过的时间：订单不断涌入，只能靠动作序列与肌肉记忆顶住，这时最容易滑进心流。火候就在你手上，掌控感精确到秒；出餐窗口的催促把肾上腺素抬到一个舒服的剂量；而锅气炸开的声音与香气，是这份工作附赠的感官奖赏。",
-    tags: ["心流", "掌控感", "肾上腺素", "感官奖赏"],
-    score: { dopamine: 80, endorphin: 45 },
-    peaks: [{ from: 11, to: 14, heat: 92 }, { from: 18, to: 21, heat: 80 }]
-  },
-  {
-    id: "barista",
-    emoji: "☕",
-    name: "咖啡师",
-    field: "现场派",
-    peak: "07:00–09:00",
-    moment: "早高峰的第一杯，萃取流速刚好拖成漂亮的鼠尾。",
-    why: "开门前那段备料是没有观众的仪式，等第一位客人推门进来，期待奖励才真正落账。研磨、压粉、萃取、拉花是一条毫秒级反馈的操作链，极易打成心流；对方接杯时的那句「谢谢」，是每天最早的一份社交回响；而油脂的香气与杯壁的温度，是鼻子和手掌共同领到的感官奖赏。",
-    tags: ["期待奖励", "心流", "社交", "感官奖赏"],
-    score: { dopamine: 68, endorphin: 40 },
-    peaks: [{ from: 7, to: 9, heat: 88 }]
-  },
-  {
-    id: "streamer",
-    emoji: "🎤",
-    name: "主播",
-    field: "现场派",
-    peak: "21:00–24:00",
-    moment: "弹幕刷屏的那一分钟，打赏特效突然连成一串。",
-    why: "直播是发放倍率不定的变比率强化：你不知道下一个礼物什么时候来、值多少钱，正是这份不确定性把多巴胺顶到峰值。弹幕与连麦让社交回路持续通电；而「下播前说不定还能冲一波」的念头，会把收播时间一推再推——这大概是成瘾指数最诚实的一次显形。",
-    tags: ["变比率强化", "社交", "多巴胺", "成瘾指数"],
-    score: { dopamine: 88, endorphin: 30 },
-    peaks: [{ from: 21, to: 24, heat: 94 }]
-  },
-  {
-    id: "detective",
-    emoji: "👮",
-    name: "刑警",
-    field: "现场派",
-    peak: "02:00–04:00",
-    moment: "凌晨三点，两条看似无关的线索终于咬住了同一辆车。",
-    why: "悬着的案子是蔡格尼克效应的实体化：没有闭合的叙事会长期占据大脑内存，直到某一刻严丝合缝地对上，那份闭合感几乎带物理量。收网前的蹲守把肾上腺素压成一触即发的状态；把不可控的嫌疑人变成可控的时刻表，靠的是纯熟的掌控感；结案那一刻，多巴胺一次性结算。",
-    tags: ["蔡格尼克效应", "肾上腺素", "掌控感", "多巴胺"],
-    score: { dopamine: 78, endorphin: 50 },
-    peaks: [{ from: 2, to: 4, heat: 91 }, { from: 20, to: 23, heat: 58 }]
-  },
-
-  /* ---------------- 助人派 ---------------- */
-  {
-    id: "teacher",
-    emoji: "👩‍🏫",
-    name: "教师",
-    field: "助人派",
-    peak: "09:30–10:30",
-    moment: "第二节课，前排那个孩子的眼睛突然亮了。",
-    why: "讲明白的那一刻，对方的困惑从脸上退潮，你收到的是最直接的社交反馈。被信任与被需要会把催产素推上去，让原本疲惫的状态软化下来；再叠一层「我把有用的东西交出去了」的多巴胺——这大概是非对抗性领域里最干净的成就感，也是老师第二天还能早起的理由。",
-    tags: ["社交", "催产素", "多巴胺"],
-    score: { dopamine: 70, endorphin: 45 },
-    peaks: [{ from: 9, to: 11, heat: 86 }, { from: 15, to: 16, heat: 55 }]
-  },
-  {
-    id: "doctor",
-    emoji: "🩺",
-    name: "医生",
-    field: "助人派",
-    peak: "03:00–05:00",
-    moment: "凌晨四点，监护仪上的直线重新变回起伏的波形。",
-    why: "抢救的那几分钟里肾上腺素接管一切：视野收窄、时间变慢，动作精准到没有杂念。流程熟到成为肌肉记忆时，掌控感压住了慌乱；等患者指标回稳、你可以摘下手套走出那扇门，脱力般的松弛会把积攒的压力一点点放走——那一口长气，就是减压的全部含义。",
-    tags: ["肾上腺素", "掌控感", "减压"],
-    score: { dopamine: 72, endorphin: 55 },
-    peaks: [{ from: 3, to: 5, heat: 90 }, { from: 8, to: 10, heat: 62 }]
-  },
-
-  /* ---------------- 奔走派 ---------------- */
-  {
-    id: "rider",
-    emoji: "🛵",
-    name: "外卖骑手",
-    field: "奔走派",
-    peak: "17:30–19:30",
-    moment: "晚高峰爆单，连着五单顺路，一路绿灯。",
-    why: "抢单像开盲盒：单价、距离、顺不顺路全都随机，这就是变比率强化的工作版。把一整片区域的路线压进脑子里、用最短路径串起来，是每天都要重算一次的掌控感；送达后系统立刻结算的提示音是即时多巴胺；而偶尔一笔大额打赏的悬念，给每一单都挂上了期待奖励。",
-    tags: ["变比率强化", "掌控感", "多巴胺", "期待奖励"],
-    score: { dopamine: 76, endorphin: 38 },
-    peaks: [{ from: 17, to: 20, heat: 90 }, { from: 11, to: 13, heat: 78 }]
-  },
-  {
-    id: "trucker",
-    emoji: "🚛",
-    name: "货车司机",
-    field: "奔走派",
-    peak: "00:00–04:00",
-    moment: "凌晨两点的高速，只剩你和一条向前的白线。",
-    why: "空旷路面上，引擎的低频、白线的节奏与被拉直的时间感会让人慢慢滑进心流。夜路没什么车要应付，副交感接管后呼吸变深，这是一种在路上的减压。夜色、仪表盘的光与驾驶室的包裹感，构成长途专属的感官奖赏；而「这一段路交给我」的判断权，就是落到实处的掌控感。",
-    tags: ["心流", "副交感", "减压", "感官奖赏", "掌控感"],
-    score: { dopamine: 55, endorphin: 48 },
-    peaks: [{ from: 0, to: 4, heat: 82 }]
-  },
-
-  /* ---------------- 生意派 ---------------- */
-  {
-    id: "sales",
-    emoji: "💼",
-    name: "销售",
-    field: "生意派",
-    peak: "18:00–22:00",
-    moment: "月末最后一天晚上九点，对方终于说：合同我签了。",
-    why: "一整月的关系铺垫、报价拉扯与反复跟进，把沉没成本堆得老高，于是签单那一刻的释放格外猛。对方说出「行」之前的几十秒，是期待奖励最浓的时候；一次成交既是业绩也是社会认可，多巴胺与社交回路同时点火；而下一笔还在路上，让你始终舍不得真的停下。",
-    tags: ["沉没成本", "期待奖励", "多巴胺", "社交"],
-    score: { dopamine: 85, endorphin: 35 },
-    peaks: [{ from: 18, to: 22, heat: 93 }]
-  },
-  {
-    id: "trader",
-    emoji: "📈",
-    name: "交易员",
-    field: "生意派",
-    peak: "09:30–11:30",
-    moment: "开盘四十分钟，仓位终于按剧本走了一波。",
-    why: "报价跳动本身就是变比率强化的教科书：盈亏的大小与到来的时机全不可控，多巴胺只对「也许下一条就赢」负责。盯盘时肾上腺素维持在细水长流的低剂量滴注，把警觉翻译成快感；深夜盯外盘之所以更难戒，是因为这条路通向的是「一个人也能撑起来」的成瘾指数。",
-    tags: ["变比率强化", "肾上腺素", "多巴胺", "成瘾指数"],
-    score: { dopamine: 90, endorphin: 28 },
-    peaks: [{ from: 9, to: 12, heat: 86 }, { from: 21, to: 24, heat: 76 }]
-  },
-
-  /* ---------------- 匠心派 ---------------- */
-  {
-    id: "maker",
-    emoji: "🔧",
-    name: "手艺人",
-    field: "匠心派",
-    peak: "15:00–17:00",
-    moment: "下午四点收尾，最后一遍砂纸打下去，纹理全出来了。",
-    why: "手工的魅力在于反馈的速度：推一下刨子、走一遍砂纸，木头的纹路立刻给出回应，这种即时确认最容易堆成心流。从毛料到成品的全过程都由你说了算，掌控感是这行最硬的通货；木头的气味、打磨的沙沙声与成品握在手里的分量，是三重感官奖赏；做完一件还想凑齐一整套，那是收集欲在悄悄加码。",
-    tags: ["心流", "掌控感", "感官奖赏", "收集欲"],
-    score: { dopamine: 70, endorphin: 52 },
-    peaks: [{ from: 15, to: 17, heat: 87 }]
-  },
-  {
-    id: "organizer",
-    emoji: "🧹",
-    name: "收纳整理师",
-    field: "匠心派",
-    peak: "10:00–11:30",
-    moment: "上午十一点，最后一个抽屉拉上时严丝合缝。",
-    why: "把失控的空间重新编成系统，是纯粹的掌控感：每一件物品被安排到该在的位置，像替大脑做了一次外部清理。视觉上从杂乱到对齐的转变本身就是感官奖赏；规律而重复的分类动作，会被血清素换算成一种安静的笃定；而按类别成套配齐收纳盒的执着，是收集欲最体面的出口。",
-    tags: ["掌控感", "感官奖赏", "血清素", "收集欲"],
-    score: { dopamine: 62, endorphin: 44 },
-    peaks: [{ from: 10, to: 12, heat: 85 }]
-  },
-
-  /* ---------------- 助人派（补） ---------------- */
-  {
-    id: "therapist",
-    emoji: "🛋️",
-    name: "心理咨询师",
-    field: "助人派",
-    peak: "21:00–23:00",
-    moment: "晚上九点，来访者说「我好像想通了」的那一刻。",
-    why: "咨询最上头的是「被需要」：对方把最乱的线头交到你手里，你陪他一点点理顺，信任落地的瞬间催产素悄悄上升。而当来访者自己说出「我懂了」，你收获的是不带炫耀的掌控感——不是你替他想通，是他借你理清。钟点一到、门关上，把别人的情绪留在房间里，是这份工作最干净的减压。",
-    tags: ["催产素", "掌控感", "减压", "社交"],
-    score: { dopamine: 66, endorphin: 48 },
-    peaks: [{ from: 21, to: 23, heat: 80 }]
-  },
-
-  /* ---------------- 现场派（补） ---------------- */
-  {
-    id: "bartender",
-    emoji: "🍸",
-    name: "调酒师",
-    field: "现场派",
-    peak: "21:00–01:00",
-    moment: "吧台最满的那阵，雪克杯一摇，全场目光都跟过来。",
-    why: "点单像开盲盒：谁会来、点什么、给多少小费全随机，这份不确定性把多巴胺顶到小高峰。摇酒、滤酒、装饰是一条毫秒级反馈的操作链，极易打成心流；而客人接过酒时那句「漂亮」和吧台此起彼伏的闲聊，是社交回路最稳的供电。深夜打烊前最后一杯自己喝的，是留给自己的奖励。",
-    tags: ["变比率强化", "心流", "社交", "多巴胺"],
-    score: { dopamine: 82, endorphin: 38 },
-    peaks: [{ from: 21, to: 1, heat: 88 }]
-  },
-
-  /* ---------------- 创意派（补） ---------------- */
-  {
-    id: "writer",
-    emoji: "✍️",
-    name: "作家 / 自由撰稿",
-    field: "创意派",
-    peak: "23:00–02:00",
-    moment: "凌晨一点，那句话终于写出了想要的重量。",
-    why: "深夜没人催稿、没人改需求，注意力才重新连成线——心流最便宜的入场券。把脑子里模糊的感觉落成准确的字，每一次「就是它」都是一次即时到账的掌控感；而多巴胺其实更早登场：在你笃定「下一句该这么写」的预判里就已经先付了款。截稿压境时肾上腺素会上来，但真正爽的是交稿后那一口长气。",
-    tags: ["心流", "掌控感", "多巴胺", "肾上腺素", "减压"],
-    score: { dopamine: 76, endorphin: 34 },
-    peaks: [{ from: 23, to: 2, heat: 84 }]
-  },
-
-  /* ---------------- 奔走派（补） ---------------- */
-  {
-    id: "guide",
-    emoji: "🗺️",
-    name: "导游",
-    field: "奔走派",
-    peak: "09:00–17:00",
-    moment: "下午景点揭幕那刻，全团同时「哇」了一声。",
-    why: "带团是发放倍率不定的期待奖励：下个景点美不美、客人买不买账、会不会突发状况，全不可控，所以揭晓那一刻最爽。把一车人的节奏、路线、情绪都安排明白，是每天都在重算的掌控感；被围着想听你讲、合影时被需要，社交回路持续通电。而站在风景里上班这件事本身，就是免费的感官奖赏。",
-    tags: ["期待奖励", "掌控感", "社交", "感官奖赏"],
-    score: { dopamine: 74, endorphin: 40 },
-    peaks: [{ from: 9, to: 17, heat: 78 }]
-  }
-];
+window.GUIDE_TIMES = {
+  /* 日常娱乐 */
+  binge: ["night","late"], blindbox: ["noon","morning"], cat: ["evening","night"],
+  replay: ["night","late"], slack: ["noon","evening"], shortvideo: ["night","late"],
+  /* 创作 · 运动 · 收集 */
+  gardening: ["morning"], photography: ["dawn","morning"], painting: ["morning","noon"],
+  calligraphy: ["morning"], pottery: ["noon"], dancing: ["evening","night"],
+  guitar: ["evening","night"], chess: ["night"], jogging: ["morning","evening"],
+  bowling: ["night"], stamp: ["noon"], juggling: ["noon"],
+  /* 运动健身 */
+  sport: ["morning","evening"], basketball: ["evening","night"], swimming: ["morning"],
+  cycling: ["morning","evening"], gym: ["morning"], badminton: ["noon"], yoga: ["morning"],
+  /* 宠物 & 异宠 */
+  dog: ["morning","noon"], aquarium: ["noon"], hamster: ["night"], parrot: ["morning"],
+  rabbit: ["noon"], gecko: ["night"], pacmanfrog: ["night"], cornsnake: ["night"],
+  sugarglider: ["night"], hedgehog: ["night"], tarantula: ["night"], hermitcrab: ["night"], axolotl: ["night"],
+  /* 桌游 & 社交 */
+  werewolf: ["night"], jubensha: ["night"], mahjong: ["night"], cards: ["night"], perler: ["noon"],
+  /* 户外 & 极限 */
+  hiking: ["morning"], podcast: ["morning","noon"], craft: ["noon"], homecook: ["noon"],
+  origami: ["noon"], meditation: ["morning","late"], jigsaw: ["noon"], coffee: ["morning"],
+  fishing: ["noon"], archery: ["noon"], skateboard: ["noon","evening"], ski: ["morning"],
+  surf: ["morning"], climbing: ["morning"], skydive: ["morning"], billiards: ["night"],
+  frisbee: ["evening"], camping: ["noon"], paragliding: ["dawn"], balloon: ["dawn"],
+  coaster: ["noon"], gokart: ["noon"], kite: ["dawn","noon"], rafting: ["noon"],
+  lego: ["noon"], karaoke: ["night"], reading: ["night","late"], darts: ["night"], plants: ["morning"],
+  /* 动手 & 轻运动 */
+  picnic: ["noon"], beach: ["dawn"], stargaze: ["late"], skip: ["noon","evening"], walk: ["morning","evening"],
+  rope: ["morning","noon"], tabletennis: ["noon","evening"], football: ["evening","night"], tennis: ["morning","noon"],
+  /* 怀旧：上个世纪的玩法 */
+  pog: ["noon"], shuttlecock: ["noon"], rubberband: ["noon"], top: ["noon"], marbles: ["noon"],
+  paperplane: ["noon"], hoop: ["noon"], hopscotch: ["noon"], beanbag: ["noon"], stones: ["noon"],
+  stringfig: ["noon"], cockfight: ["noon"], eaglechick: ["noon"], hideseek: ["noon"], cards90: ["noon"],
+  comic: ["noon"], snowball: ["noon"], firecracker: ["noon"],
+  /* 民族 & 乡村（少数民族闲趣 + 贵州村 BA / 村超） */
+  pohshui: ["noon"], firefest: ["night"], zaran: ["noon"], tangka: ["morning","noon"],
+  shange: ["noon"], naadam: ["noon"], dongsong: ["noon"], cunba: ["evening","night"], cunchao: ["evening","night"],
+  /* 好吃 */
+  tea: ["morning"], baking: ["noon"], milktea: ["noon"], luosifen: ["noon"], noodle: ["noon"],
+  fried: ["night"], hotpot: ["night"], dessert: ["noon","morning"]
+};

@@ -1028,6 +1028,54 @@ mark { background: rgba(255,176,32,0.35); color: var(--amber); border-radius: 3p
   }
 }
 
+/* ---------- 时段爽感 ---------- */
+.times { margin: 46px 0 10px; padding-top: 40px; border-top: 1px dashed var(--glass-line); }
+.times-head { margin-bottom: 18px; }
+.times-intro { flex: 1 1 420px; }
+.times-kicker {
+  display: inline-block; font-size: 11px; letter-spacing: 1px; padding: 3px 10px;
+  border-radius: 999px; background: rgba(0,229,255,0.12); color: var(--cyan); font-weight: 600;
+}
+.times-title { margin: 10px 0 8px; font-size: 27px; letter-spacing: .5px; }
+.times-sub { margin: 0; color: var(--text-dim); font-size: 14px; max-width: 640px; }
+
+.times-toolbar { display: flex; gap: 14px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+.times-slots { display: flex; flex-wrap: wrap; gap: 8px; }
+.ts-chip {
+  cursor: pointer; user-select: none; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-family: inherit;
+  color: var(--text-dim); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-line);
+  display: inline-flex; flex-direction: column; align-items: center; line-height: 1.2; transition: all .2s ease;
+}
+.ts-chip small { font-size: 9.5px; opacity: .6; margin-top: 2px; }
+.ts-chip .ts-ico { font-size: 15px; }
+.ts-chip:hover { color: var(--text); border-color: rgba(0,229,255,0.4); }
+.ts-chip.is-active {
+  color: #fff; background: linear-gradient(135deg, var(--pink), var(--purple));
+  border-color: transparent; box-shadow: 0 0 14px rgba(255,46,136,0.35);
+}
+.times-now {
+  cursor: pointer; padding: 7px 16px; border-radius: 999px; font-size: 12.5px; font-family: inherit;
+  color: var(--text-dim); background: rgba(255,255,255,0.04); border: 1px solid var(--glass-line); transition: all .2s ease;
+}
+.times-now:hover { color: #fff; border-color: #fff; }
+
+.times-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.times-cap { grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.times-none { grid-column: 1 / -1; padding: 40px 0; text-align: center; color: var(--text-dim); }
+.ts-card {
+  cursor: pointer; font-family: inherit; text-align: left;
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; color: var(--text);
+  padding: 13px 15px; border-radius: var(--radius-sm); background: var(--glass); border: 1px solid var(--glass-line);
+  transition: transform .2s ease, border-color .2s ease;
+}
+.ts-card:hover { transform: translateY(-2px); border-color: rgba(0,229,255,0.45); box-shadow: 0 0 20px rgba(0,229,255,0.16); }
+.ts-emoji { font-size: 24px; line-height: 1.1; grid-row: 1 / span 2; }
+.ts-main { min-width: 0; display: flex; flex-direction: column; }
+.ts-main b { font-size: 15px; color: var(--text); word-break: break-word; }
+.ts-main small { font-size: 12px; color: var(--text-dim); margin-top: 3px; line-height: 1.5; word-break: break-word; }
+.ts-tags { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.ts-tags .card-tag { font-size: 10.5px; padding: 2px 7px; opacity: .85; white-space: nowrap; }
+
 /* ---------- 分享 / 回到顶部 ---------- */
 .share-btn {
   margin-left: auto; padding: 8px 14px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 600;
