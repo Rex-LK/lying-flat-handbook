@@ -75,6 +75,148 @@ window.GUIDE_ITEMS = [
     lab: "shortvideo"
   },
 
+  /* ---------------- 增补：创作 · 饮品 · 运动 · 收集 ---------------- */
+  {
+    id: "tea",
+    cat: "food",
+    name: "品茶",
+    emoji: "🍵",
+    hook: "一盏茶的时间，是给脑子按的暂停键。",
+    why: "热水冲下去，茶香一漫开，呼吸不自觉慢下来——这是副交感系统在接管，心率和皮质醇松动。茶叶里的茶氨酸还会推高血清素，带来「安静的清醒」。所以品茶不是解渴，是顺手完成一次微型减压。",
+    tags: ["副交感", "血清素", "减压"],
+    lab: "tea"
+  },
+  {
+    id: "baking",
+    cat: "food",
+    name: "烘焙",
+    emoji: "🍰",
+    hook: "烤箱叮一声，香味先替你赢了。",
+    why: "面粉、黄油、糖在烤箱里发生美拉德反应，香味是大脑最买账的感官奖赏。等出炉那几分钟，期待奖励让你频频开烤箱门；第一口酥皮碎裂，多巴胺给「我做的」盖了章。烘焙的爽，一半在吃，一半在「居然成功了」的掌控感。",
+    tags: ["多巴胺", "感官奖赏", "掌控感"],
+    lab: "baking"
+  },
+  {
+    id: "gardening",
+    cat: "fun",
+    name: "园艺",
+    emoji: "🌱",
+    hook: "手脏着，脑子却歇了。",
+    why: "松土、播种、看芽冒头，是节奏极慢的心流。手脏着、腿蹲着，大脑却从「应对」切到「沉浸」，内啡肽随照料慢慢累积；而每一片新叶都是你说了算的掌控感。园艺的治愈，是身体在户外悄悄回了血。",
+    tags: ["内啡肽", "心流", "掌控感"],
+    lab: "gardening"
+  },
+  {
+    id: "photography",
+    cat: "fun",
+    name: "摄影",
+    emoji: "📷",
+    hook: "取景框里，世界变礼物。",
+    why: "取景框让你重新看世界——光、影、瞬间都被你「框」成礼物。按下快门的变比率强化最上头：你永远不知道下一张多惊艳，期待奖励持续投放；而当一张真的打动自己，心流和多巴胺同时到账。摄影是带目的地的散步。",
+    tags: ["多巴胺", "心流", "期待奖励"],
+    lab: "photography"
+  },
+  {
+    id: "painting",
+    cat: "fun",
+    name: "绘画",
+    emoji: "🎨",
+    hook: "手在动，脑子就歇了。",
+    why: "笔触落纸，判断阈值被颜色接管，杂念自然退场——这是典型心流。调色、铺陈、收尾，每一步都有即时反馈，多巴胺小额返现；画完盯着成果，减压感比刷手机干净得多。画得好不好不重要，重要的是过程。",
+    tags: ["心流", "多巴胺", "减压"],
+    lab: "painting"
+  },
+  {
+    id: "calligraphy",
+    cat: "fun",
+    name: "书法",
+    emoji: "✍️",
+    hook: "一笔一画，把皮质醇写掉。",
+    why: "一笔一画要稳、要匀，呼吸会跟着笔锋慢下来，副交感张力升高，像一次不动的冥想。重复的笔画进入轻度心流，皮质醇被一笔笔写掉。书法不追求好看，追求那片刻「只剩这一笔」的安静。",
+    tags: ["心流", "减压", "副交感"],
+    lab: "calligraphy"
+  },
+  {
+    id: "pottery",
+    cat: "fun",
+    name: "陶艺",
+    emoji: "🏺",
+    hook: "把一团泥，变成能用的物。",
+    why: "泥在掌心转，离心力教你放手——太用力反而塌，松一点才立得住，这是最直观的掌控感。拉坯、修坯、上釉是连贯的心流，成品出炉那刻多巴胺给「我捏出来的」盖章。陶艺的爽，是用手把混沌收成秩序。",
+    tags: ["心流", "掌控感", "多巴胺"],
+    lab: "pottery"
+  },
+  {
+    id: "dancing",
+    cat: "fun",
+    name: "跳舞",
+    emoji: "💃",
+    hook: "音乐一响，肩膀就松了。",
+    why: "音乐一响，身体自动跟上，动作与节奏锁死进入心流；持续律动让内啡肽成片释放，比久坐后的舒服更透。哪怕关起门乱扭，多巴胺也给「我在动」即时奖励。跳舞不考技术，考你敢不敢让肩膀松下来。",
+    tags: ["内啡肽", "心流", "多巴胺"],
+    lab: "dancing"
+  },
+  {
+    id: "guitar",
+    cat: "fun",
+    name: "学乐器",
+    emoji: "🎸",
+    hook: "付出的时间，变成一段旋律。",
+    why: "从锯木头到弹出一段旋律，每次「终于顺了」都是心流的小高潮，多巴胺给进步盖章；手指记忆成形时，内啡肽随熟练悄悄累积。学乐器的爽在于：你付出的时间，会变成一段别人偷不走的旋律。",
+    tags: ["心流", "多巴胺", "内啡肽"],
+    lab: "guitar"
+  },
+  {
+    id: "chess",
+    cat: "fun",
+    name: "国际象棋",
+    emoji: "♟️",
+    hook: "把混乱的盘面，收进自己的算计。",
+    why: "每一步都在脑内推演好几步，注意力高度集中却毫不费力，是纯粹的心流。吃掉对方子、将死那一下，掌控感爆棚，多巴胺即时返现。象棋的爽，是把混乱一点点收进秩序里的掌控感。",
+    tags: ["心流", "掌控感", "多巴胺"],
+    lab: "chess"
+  },
+  {
+    id: "jogging",
+    cat: "fun",
+    name: "慢跑",
+    emoji: "🏃",
+    hook: "跑完那句「今天也搞定了自己」。",
+    why: "跑过开头那阵难受，呼吸和步伐对上拍，脑子切进轻度心流；内啡肽随距离稳步累积，带来温和愉悦，也顺手把皮质醇压下去。慢跑的回报不在终点，在跑完那句对自己说的肯定。",
+    tags: ["内啡肽", "心流", "减压"],
+    lab: "jogging"
+  },
+  {
+    id: "bowling",
+    cat: "fun",
+    name: "保龄球",
+    emoji: "🎳",
+    hook: "全中那一下，全场眼睛跟着球。",
+    why: "助走、摆臂、松手——球滚出去那几秒，全场的眼睛跟着它。全中的瞬间是变比率强化的高光：你不知道下一球多准，但「啪」一声全倒，多巴胺直接拉满；调整角度的掌控感，让你一局接一局。",
+    tags: ["多巴胺", "变比率强化", "掌控感"],
+    lab: "bowling"
+  },
+  {
+    id: "stamp",
+    cat: "fun",
+    name: "集邮",
+    emoji: "📮",
+    hook: "把零散世界，收进一本秩序。",
+    why: "一枚枚收进来，集邮是标准的收集欲：每补上缺的那张，大脑就给一次小奖励。遇到稀有票的随机惊喜，是变比率强化——你永远不知道下一封来信带什么。收集的爽，是把世界慢慢收进自己的秩序。",
+    tags: ["收集欲", "变比率强化", "多巴胺"],
+    lab: "stamp"
+  },
+  {
+    id: "juggling",
+    cat: "fun",
+    name: "杂耍",
+    emoji: "🤹",
+    hook: "手越稳，世界越听你指挥。",
+    why: "三个球在空中画出节奏，注意力被牢牢钉在轨迹上，进入高度专注的心流；每多接住一圈，掌控感就加一分，多巴胺给「没掉」盖章。杂耍的爽很纯粹：专注本身就成了奖励。",
+    tags: ["心流", "掌控感", "多巴胺"],
+    lab: "juggling"
+  },
+
   /* ---------------- 好吃类 ---------------- */
   {
     id: "milktea",
@@ -1031,7 +1173,8 @@ window.GUIDE_DOPAMINE = {
   plants: 50, picnic: 65, beach: 80, stargaze: 48,
   pog: 88, shuttlecock: 70, rubberband: 65, top: 72, marbles: 85, paperplane: 68,
   hoop: 60, hopscotch: 62, beanbag: 75, stones: 66, stringfig: 64, cockfight: 78,
-  eaglechick: 70, hideseek: 76, cards90: 90, comic: 72, snowball: 80, firecracker: 84
+  eaglechick: 70, hideseek: 76, cards90: 90, comic: 72, snowball: 80, firecracker: 84,
+  tea: 40, baking: 72, gardening: 60, photography: 70, painting: 68, calligraphy: 55, pottery: 70, dancing: 75, guitar: 72, chess: 66, jogging: 55, bowling: 70, stamp: 65, juggling: 64
 };
 
 /* 内啡肽指数（0-100）：分泌内啡肽的强度，越高越「爽/痛后快感」
@@ -1056,6 +1199,7 @@ window.GUIDE_ENDORPHIN = {
   gym: 72,
   badminton: 75,
   yoga: 55,
+  tea: 50, baking: 45, gardening: 78, photography: 48, painting: 60, calligraphy: 65, pottery: 72, dancing: 85, guitar: 70, chess: 55, jogging: 82, bowling: 50, stamp: 40, juggling: 68,
 
   /* 常见宠物 */
   dog: 58,
@@ -1154,7 +1298,8 @@ window.GUIDE_GENRES = {
   /* 怀旧：上个世纪的玩法 */
   pog: "怀旧", shuttlecock: "怀旧", rubberband: "怀旧", top: "怀旧", marbles: "怀旧", paperplane: "怀旧",
   hoop: "怀旧", hopscotch: "怀旧", beanbag: "怀旧", stones: "怀旧", stringfig: "怀旧", cockfight: "怀旧",
-  eaglechick: "怀旧", hideseek: "怀旧", cards90: "怀旧", comic: "怀旧", snowball: "怀旧", firecracker: "怀旧"
+  eaglechick: "怀旧", hideseek: "怀旧", cards90: "怀旧", comic: "怀旧", snowball: "怀旧", firecracker: "怀旧",
+  tea: "饮品", baking: "美食", gardening: "园艺", photography: "摄影", painting: "艺术", calligraphy: "艺术", pottery: "手工", dancing: "运动", guitar: "音乐", chess: "桌游", jogging: "运动", bowling: "运动", stamp: "收集", juggling: "运动"
 };
 
 /* =========================================================
@@ -1186,7 +1331,8 @@ window.GUIDE_AUDIENCE = {
   pog: "both", shuttlecock: "both", rubberband: "both", top: "both", paperplane: "both", hoop: "both",
   stringfig: "both", comic: "both",
   marbles: "bored", hopscotch: "bored", beanbag: "bored", stones: "bored", cockfight: "bored",
-  eaglechick: "bored", hideseek: "bored", cards90: "bored", snowball: "bored", firecracker: "bored"
+  eaglechick: "bored", hideseek: "bored", cards90: "bored", snowball: "bored", firecracker: "bored",
+  tea: "both", baking: "both", gardening: "both", photography: "both", painting: "both", calligraphy: "both", pottery: "both", dancing: "both", guitar: "both", chess: "both", jogging: "busy", bowling: "both", stamp: "both", juggling: "both"
 };
 
 window.GUIDE_DURATION = {
@@ -1204,7 +1350,8 @@ window.GUIDE_DURATION = {
   plants: 30, picnic: 120, beach: 120, stargaze: 90,
   pog: 45, shuttlecock: 30, rubberband: 30, top: 40, marbles: 40, paperplane: 20,
   hoop: 40, hopscotch: 30, beanbag: 45, stones: 25, stringfig: 30, cockfight: 20,
-  eaglechick: 30, hideseek: 40, cards90: 15, comic: 60, snowball: 60, firecracker: 20
+  eaglechick: 30, hideseek: 40, cards90: 15, comic: 60, snowball: 60, firecracker: 20,
+  tea: 15, baking: 60, gardening: 45, photography: 40, painting: 60, calligraphy: 30, pottery: 60, dancing: 45, guitar: 30, chess: 40, jogging: 30, bowling: 45, stamp: 20, juggling: 20
 };
 
 /* =========================================================
@@ -1226,7 +1373,8 @@ window.GUIDE_COST = {
   plants: 0, picnic: 0, beach: 0, stargaze: 0,
   pog: 0, shuttlecock: 0, rubberband: 0, top: 1, marbles: 0, paperplane: 0,
   hoop: 1, hopscotch: 0, beanbag: 0, stones: 0, stringfig: 0, cockfight: 0,
-  eaglechick: 0, hideseek: 0, cards90: 1, comic: 1, snowball: 0, firecracker: 1
+  eaglechick: 0, hideseek: 0, cards90: 1, comic: 1, snowball: 0, firecracker: 1,
+  tea: 1, baking: 1, gardening: 1, photography: 1, painting: 1, calligraphy: 0, pottery: 1, dancing: 0, guitar: 1, chess: 0, jogging: 0, bowling: 1, stamp: 1, juggling: 0
 };
 
 window.GUIDE_LEVEL = {
@@ -1242,7 +1390,8 @@ window.GUIDE_LEVEL = {
   plants: 0, picnic: 0, beach: 0, stargaze: 0,
   pog: 0, shuttlecock: 0, rubberband: 0, top: 1, marbles: 0, paperplane: 0,
   hoop: 0, hopscotch: 0, beanbag: 0, stones: 0, stringfig: 0, cockfight: 0,
-  eaglechick: 0, hideseek: 0, cards90: 0, comic: 0, snowball: 0, firecracker: 0
+  eaglechick: 0, hideseek: 0, cards90: 0, comic: 0, snowball: 0, firecracker: 0,
+  tea: 0, baking: 1, gardening: 0, photography: 0, painting: 0, calligraphy: 0, pottery: 1, dancing: 0, guitar: 1, chess: 1, jogging: 0, bowling: 0, stamp: 0, juggling: 1
 };
 
 /* =========================================================
